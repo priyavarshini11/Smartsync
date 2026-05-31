@@ -1,0 +1,773 @@
+[
+  {
+    "id": "_e6fcCea2UxJ6aYQ",
+    "email": "cse_hod@admin.internal",
+    "username": "AVN Campus Administrator",
+    "passwordHash": "$2a$10$YcIPG0.WFSKrZf0r/clw4uGsJrTbJLmpbSWL2Gpvdx6r8EQoyiHce",
+    "role": "admin",
+    "profile": null,
+    "onboardingComplete": true,
+    "createdAt": "2026-05-21T10:16:19.375Z"
+  },
+  {
+    "id": "Kmbyr8LSSrr0lVN-",
+    "email": "aaravsharmacoding@gmail.com",
+    "username": "Aarav Sharma",
+    "passwordHash": "$2a$10$NEluuC/x3y1hx5zY/6Qd2OaACVGtLbx2J2t8XC7fKPk3dbV/M3oiy",
+    "role": "cr",
+    "profile": {
+      "branch": "br_cse",
+      "year": 1,
+      "semester": 1,
+      "section": "A",
+      "openedResources": [
+        "rdAJUZFMu6EDHPtC",
+        "Tld4aB3EhNyucMWM",
+        "vwn7MSj4zTfSK9Jt",
+        "adEF61W0rU8mCr44",
+        "ss7ZSanImkZ57j0S"
+      ],
+      "rollNo": "245U1A05Z1"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T10:30:13.844Z"
+  },
+  {
+    "id": "XiuBDYdAk3UMOzGV",
+    "email": "meerareddyjava@gmail.com",
+    "username": "Meera Reddy",
+    "passwordHash": "$2a$10$4PyWqECZDvqsHks570DpIuBn8szaEcBX1zYnbWYuuyao5i5auE67K",
+    "role": "student",
+    "profile": {
+      "branch": "br_cse",
+      "year": 1,
+      "semester": 1,
+      "section": "A",
+      "openedResources": [
+        "hl3kHnan6xg5_PzH",
+        "TyK9O2bVGqYSoPFj",
+        "sYGxnIaDMZuu6X7u",
+        "MtDtW7LylI8qW1BF",
+        "Oqiv65EChRQPPCxy",
+        "utpxDi0pT9Zj39Nk",
+        "adEF61W0rU8mCr44",
+        "ss7ZSanImkZ57j0S",
+        "Smx_niFwGN8looMy",
+        "o_rG45gSzOW541Qp",
+        "HrIMsx746jDjUEl8"
+      ],
+      "rollNo": "245U1A05Z2"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T10:30:51.869Z"
+  },
+  {
+    "id": "QX0jaWGB9ux-iop4",
+    "email": "rahulvermapython@gmail.com",
+    "username": "Rahul Verma",
+    "passwordHash": "$2a$10$09ICktyJmG4DAg3hY48dO.eLffNCXwK018ZTK7oGwrd7uuJFJ4Lp2",
+    "role": "cr",
+    "profile": {
+      "branch": "br_cse",
+      "year": 2,
+      "semester": 4,
+      "section": "B",
+      "rollNo": "245U1A05Z3"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T10:31:26.546Z"
+  },
+  {
+    "id": "zH9j9NhgOXh7EYIl",
+    "email": "priyanairwebdev@gmail.com",
+    "username": "Priya Nair",
+    "passwordHash": "$2a$10$QkpRQaDGAbwGKSW.Mv0S0els0VXp/FmabWrj4y60eHDq4h1PiEyi6",
+    "role": "student",
+    "profile": {
+      "branch": "br_cse",
+      "year": 2,
+      "semester": 4,
+      "section": "B",
+      "rollNo": "245U1A05Z4"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T10:32:29.121Z"
+  },
+  {
+    "id": "tLcLomn54rhJdTMG",
+    "email": "karthikraosoftware@gmail.com",
+    "username": "Karthik Rao",
+    "passwordHash": "$2a$10$UGp1fvpYdDKvGVjIFZ2Th.0Cqql4xvaLGKk/cBXnKODqdL3l1F.QW",
+    "role": "student",
+    "profile": {
+      "branch": "br_cse",
+      "year": 2,
+      "semester": 4,
+      "section": "B",
+      "openedResources": [
+        "kqzc_vil0n_zQeSX",
+        "XeAghBDNI8KJfazI"
+      ],
+      "rollNo": "245U1A05Z5"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:19:11.367Z"
+  },
+  {
+    "id": "TW-mAnu7k-VKkD1l",
+    "email": "snehapatelelectronics@gmail.com",
+    "username": "Sneha Patel",
+    "passwordHash": "$2a$10$0fmj.mx8DrEEybuuM0x3euaE1MwirU5MGXcZT./T9G2vOT9dHAyES",
+    "role": "cr",
+    "profile": {
+      "branch": "br_ece",
+      "year": 1,
+      "semester": 1,
+      "section": "A",
+      "rollNo": "245U1A05Z5"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:19:54.270Z"
+  },
+  {
+    "id": "7PCSDFtfbwMmQ--Z",
+    "email": "arjunkumarcircuits@gmail.com",
+    "username": "Arjun Kumar",
+    "passwordHash": "$2a$10$ZXMPxnv8jrddHc9yl1ynpuOJCR/5AudMBiOxNQsWNzb/w6rg5IIha",
+    "role": "student",
+    "profile": {
+      "branch": "br_ece",
+      "year": 1,
+      "semester": 1,
+      "section": "A",
+      "rollNo": "245U1A05Z6"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:20:22.224Z"
+  },
+  {
+    "id": "UYiRwayHeJkd96kz",
+    "email": "divyamenonvlsi@gmail.com",
+    "username": "Divya Menon",
+    "passwordHash": "$2a$10$s3MSUZNAeaepuoRWbwR.huUb8SBTloAt9E5blMCmZjR.nAJ1KfE8.",
+    "role": "cr",
+    "profile": {
+      "branch": "br_ece",
+      "year": 2,
+      "semester": 4,
+      "section": "B"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:22:57.211Z"
+  },
+  {
+    "id": "_GIstDCIyYIOFgYW",
+    "email": "rohanguptrasignals@gmail.com",
+    "username": "Rohan Gupta",
+    "passwordHash": "$2a$10$67DOwGaqkqz/3Hl/yidhneDwopgf4KkdKIR4Hyd5nsxTviG4HPjye",
+    "role": "student",
+    "profile": {
+      "branch": "br_ece",
+      "year": 2,
+      "semester": 4,
+      "section": "B",
+      "rollNo": "245U1A05Z7"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:23:35.515Z"
+  },
+  {
+    "id": "FBOtWtdnMOn1_PbB",
+    "email": "ananyasinghembedded@gmail.com",
+    "username": "Ananya Singh",
+    "passwordHash": "$2a$10$NgzzJCTdBeNGTHpNmBgXDeSYNMrxePBJB5YLIOrAo91l3E4hCo69.",
+    "role": "student",
+    "profile": {
+      "branch": "br_ece",
+      "year": 2,
+      "semester": 4,
+      "section": "B",
+      "rollNo": "245U1A05Z8"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:24:04.596Z"
+  },
+  {
+    "id": "AiPqFALt7PaD3plO",
+    "email": "vikramdasaiml@gmail.com",
+    "username": "Vikram Das",
+    "passwordHash": "$2a$10$yH.YiMOEeR.0K5APYeD59.sW97rfTYwNNypj5ZHvyD/xtSFoItMl.",
+    "role": "cr",
+    "profile": {
+      "branch": "br_aiml",
+      "year": 1,
+      "semester": 1,
+      "section": "A",
+      "rollNo": "245U1A05Z9"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:24:37.745Z"
+  },
+  {
+    "id": "NlyFE_mGEA2Xtjg_",
+    "email": "nishaiyermachine@gmail.com",
+    "username": "Nisha Iyer",
+    "passwordHash": "$2a$10$wJ7na.aqtBIf3p8sfoUUP.lnFm2CFAYxUVQ5Ukd1A80EWg7VQ9ua2",
+    "role": "student",
+    "profile": {
+      "branch": "br_aiml",
+      "year": 1,
+      "semester": 1,
+      "section": "A",
+      "rollNo": "245U1A05Y1"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:25:11.791Z"
+  },
+  {
+    "id": "JPW4l-uMwWK-Ymx7",
+    "email": "harshareddydata@gmail.com",
+    "username": "Harsha Reddy",
+    "passwordHash": "$2a$10$2/7bqm4vuVvWF3HcdNtOuOTEl7myhi9BPHLFsblmM/6tAVQSDtMZK",
+    "role": "cr",
+    "profile": {
+      "branch": "br_aiml",
+      "year": 2,
+      "semester": 4,
+      "section": "B",
+      "rollNo": "245U1A05Y2"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:25:44.247Z"
+  },
+  {
+    "id": "fNhvXe0airGgSNH6",
+    "email": "kavyasharmaneural@gmail.com",
+    "username": "Kavya Sharma",
+    "passwordHash": "$2a$10$6v/BNizeMkTCOyRztN27dO0ys3W8qZUte9gQQp9BgJUXIPdAkdBKW",
+    "role": "student",
+    "profile": {
+      "branch": "br_aiml",
+      "year": 2,
+      "semester": 4,
+      "section": "B",
+      "rollNo": "245U1A05Y3"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:26:43.163Z"
+  },
+  {
+    "id": "2IOMwBfIRFOOeOd2",
+    "email": "adityajoshialgo@gmail.com",
+    "username": "Aditya Joshi",
+    "passwordHash": "$2a$10$jNJMvcvk92VqS8nFg7jL0O7fspRq75m4m9ElzD0iD42DcoEqVqbEO",
+    "role": "student",
+    "profile": {
+      "branch": "br_aiml",
+      "year": 2,
+      "semester": 4,
+      "section": "B",
+      "rollNo": "245U1A05Y4"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:27:24.166Z"
+  },
+  {
+    "id": "4EnqHWBaey18oe_J",
+    "email": "tanvikapoorcyber@gmail.com",
+    "username": "Tanvi Kapoor",
+    "passwordHash": "$2a$10$Y/96Ma1kaCB6eduKhWpkkeZrU98I9XtIXKDaTAfDM70/gmxnYmq9u",
+    "role": "cr",
+    "profile": {
+      "branch": "br_cyber",
+      "year": 1,
+      "semester": 1,
+      "section": "A",
+      "rollNo": "245U1A05Y5"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:27:58.970Z"
+  },
+  {
+    "id": "cChAGPp_UMbKWKwh",
+    "email": "saicharanhacking@gmail.com",
+    "username": "Sai Charan",
+    "passwordHash": "$2a$10$U9z1e9Wd/BBVITOtyz6tc.2mlMMj06dfjAWGgAcuv4vHuXfk5.Zkq",
+    "role": "student",
+    "profile": {
+      "branch": "br_cyber",
+      "year": 1,
+      "semester": 1,
+      "section": "A",
+      "rollNo": "245U1A05Y6"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:29:08.304Z"
+  },
+  {
+    "id": "D1WHrDKvwL9Qdi3_",
+    "email": "nehaagarwalsecurity@gmail.com",
+    "username": "Neha Agarwal",
+    "passwordHash": "$2a$10$qSJLPfBkP6nlQ63t3PZfY.XmC8V18wdr5TG/xTMsc/vaOWsgYlXX2",
+    "role": "cr",
+    "profile": {
+      "branch": "br_cyber",
+      "year": 2,
+      "semester": 4,
+      "section": "B",
+      "rollNo": "245U1A05Y7"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:29:54.806Z"
+  },
+  {
+    "id": "p77tVWCzTcVTp0pF",
+    "email": "manishyadavnetwork@gmail.com",
+    "username": "Manish Yadav",
+    "passwordHash": "$2a$10$DMBOtzCPiGa9hk/VuZLLZOhp/plYeXU3jTWa8l5yrQXFPEDdfD5Vm",
+    "role": "student",
+    "profile": {
+      "branch": "br_cyber",
+      "year": 2,
+      "semester": 4,
+      "section": "B",
+      "rollNo": "245U1A05X1"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:31:32.129Z"
+  },
+  {
+    "id": "-UXq_neOUrFy1eYj",
+    "email": "ishaanmehtafirewall@gmail.com",
+    "username": "Ishaan Mehta",
+    "passwordHash": "$2a$10$9beOrFnVCvZ3kfV8AMy1H.f9iT5uKmPEpqS9JenW9q6e0NxvVfLf2",
+    "role": "student",
+    "profile": {
+      "branch": "br_cyber",
+      "year": 2,
+      "semester": 4,
+      "section": "B",
+      "rollNo": "245U1A05Y8"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T11:32:07.185Z"
+  },
+  {
+    "id": "7oiycbRXEnEgYr1r",
+    "email": "rajeshkumarprogramming@gmail.com",
+    "username": "Dr. Rajesh Kumar",
+    "passwordHash": "$2a$10$.tHqWC9RnuB6/4YsRUU/3eQAoS0jCBEEn1qqq7tlEBUlRQlbg56ca",
+    "role": "admin_faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_cse",
+          "year": 1,
+          "semester": 1,
+          "section": "A",
+          "subjectId": "sub_uaOgSziIn1sBRIhm"
+        },
+        {
+          "branch": "br_cse",
+          "year": 1,
+          "semester": 2,
+          "section": "A",
+          "subjectId": "sub_jhoLOMEHeE1nyfu5"
+        },
+        {
+          "branch": "br_cse",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_NHOBCmKx2PtM6W1f"
+        }
+      ],
+      "branch": "br_cse"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:47:27.546Z"
+  },
+  {
+    "id": "dsTcBuFaiDxmpfiB",
+    "email": "anithareddystructures@gmail.com",
+    "username": "Prof. Anitha Reddy",
+    "passwordHash": "$2a$10$MAK9bVvergo9wHlDIzMZ3en228yPz6PaMYjJMe.itW3DqCr0FIs/i",
+    "role": "faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_cse",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_LXIgf_JV8p41jCX6"
+        }
+      ]
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:47:54.306Z"
+  },
+  {
+    "id": "CHJSeOCYrvypLC0W",
+    "email": "sandeepvarmadbms@gmail.com",
+    "username": "Mr. Sandeep Varma",
+    "passwordHash": "$2a$10$bqzPiTh8rp1g8p.gp2lTNuWLHI6olrzruIXkO4LDTU4ZzIWWI06SO",
+    "role": "faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_cse",
+          "year": 1,
+          "semester": 1,
+          "section": "A",
+          "subjectId": "sub_uaOgSziIn1sBRIhm"
+        }
+      ]
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:48:26.694Z"
+  },
+  {
+    "id": "VdNYhhkHKb2IVm8i",
+    "email": "kavitharaoelectronics@gmail.com",
+    "username": "Ms. Kavitha Rao",
+    "passwordHash": "$2a$10$KMgbeJczLHedT1FxVnTxu.gb1Jk6RqrcprHvNpTzcrvx4bJT4228e",
+    "role": "admin_faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_ece",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_Cb-6t0x2uGlZgpzN"
+        },
+        {
+          "branch": "br_ece",
+          "year": 2,
+          "semester": 4,
+          "section": "ALL",
+          "subjectId": "sub_M_dF2tb41OXd_e1g"
+        }
+      ],
+      "branch": "br_ece"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:48:48.332Z"
+  },
+  {
+    "id": "v_G3yTu8ktRUIZ_g",
+    "email": "maheshbabudigital@gmail.com",
+    "username": "Dr. Mahesh Babu",
+    "passwordHash": "$2a$10$v26Jbop7IVUA71bSWWfztekGbzyiIKzIe7318JUf5g2VITthVulJ6",
+    "role": "faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_ece",
+          "year": 2,
+          "semester": 4,
+          "section": "ALL",
+          "subjectId": "sub_M_dF2tb41OXd_e1g"
+        }
+      ]
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:49:21.175Z"
+  },
+  {
+    "id": "3Wo80PG2HhEME-et",
+    "email": "snehalathasignals@gmail.com",
+    "username": "Prof. Snehalatha Devi",
+    "passwordHash": "$2a$10$Qm6GQfjTvbpbSRolL7y8.uVvmhfXWbK6buAV.FrLQHHI5pjFsvMFO",
+    "role": "faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_ece",
+          "year": 2,
+          "semester": 4,
+          "section": "ALL",
+          "subjectId": "sub_uVN4WZVhA5Ehpfq_"
+        }
+      ]
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:49:43.455Z"
+  },
+  {
+    "id": "jOe8yWtKfky8eQIj",
+    "email": "aravindnaidupython@gmail.com",
+    "username": "Mr. Aravind Naidu",
+    "passwordHash": "$2a$10$QQDEy0NJlVaLxTetxlPKD.fWQoc3Fjfw6ddafD95iQWV3fUgaxrGi",
+    "role": "admin_faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_aiml",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_27Ddi5GSohtAQGu2"
+        },
+        {
+          "branch": "br_aiml",
+          "year": 2,
+          "semester": 4,
+          "section": "ALL",
+          "subjectId": "sub_ENFRBZjYtz6O2xjk"
+        }
+      ],
+      "branch": "br_aiml"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:50:07.258Z"
+  },
+  {
+    "id": "HdRPtWjjSQcwLMr1",
+    "email": "priyankasharmaml@gmail.com",
+    "username": "Dr. Priyanka Sharma",
+    "passwordHash": "$2a$10$n3An/yAKbyQSTmHtofOKkuU4c4JRWBWK8GwHgHQCvOSm0Rf8apXQm",
+    "role": "faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_aiml",
+          "year": 2,
+          "semester": 4,
+          "section": "ALL",
+          "subjectId": "sub_7uRY-HFweh0-7Whw"
+        }
+      ]
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:50:38.262Z"
+  },
+  {
+    "id": "2bJCpi98-89uauL2",
+    "email": "deepikamenonanalytics@gmail.com",
+    "username": "Ms. Deepika Menon",
+    "passwordHash": "$2a$10$z9zHSnTDU9sJLrDDGgd/EOa5HiChRwPpWzI7PfIvjJyJsSut0R8tO",
+    "role": "faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_aiml",
+          "year": 2,
+          "semester": 4,
+          "section": "ALL",
+          "subjectId": "sub_JcsEILuUp_dN3s36"
+        }
+      ]
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:52:05.498Z"
+  },
+  {
+    "id": "JqWbexV5bvUg4AfE",
+    "email": "naveenreddycyber@gmail.com",
+    "username": "Mr. Naveen Reddy",
+    "passwordHash": "$2a$10$coi5SSsCk4fYSx3.zm0oLOAPAhvem6OJVy5gHC/mex/onCuBLm/j6",
+    "role": "admin_faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_cyber",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_EB9GtHeauo2sktGF"
+        }
+      ],
+      "branch": "br_cyber"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:52:29.954Z"
+  },
+  {
+    "id": "Pftpj__seMIRQU8M",
+    "email": "sanjaymehtanetwork@gmail.com",
+    "username": "Prof. Sanjay Mehta",
+    "passwordHash": "$2a$10$qsoU3O3bvTcF/5DbEZZmYeqM8ywCAtbqv97Y9AcvcyONu.ls0CtqS",
+    "role": "faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_cyber",
+          "year": 2,
+          "semester": 4,
+          "section": "ALL",
+          "subjectId": "sub_DYpqepUz9FVtqsDp"
+        }
+      ]
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:52:56.724Z"
+  },
+  {
+    "id": "KP4K_ua8PWUOt96L",
+    "email": "farahkhanethical@gmail.com",
+    "username": "Dr. Farah Khan",
+    "passwordHash": "$2a$10$0PJqKs45XPFcPu0/fQzrg.hIitPz21VpHI1aigwwwS6mT2GIafiD2",
+    "role": "faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_cyber",
+          "year": 2,
+          "semester": 4,
+          "section": "ALL",
+          "subjectId": "sub_nh_5aK6nQrFtBj5z"
+        }
+      ]
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:53:16.400Z"
+  },
+  {
+    "id": "zo16rZ3UOYuBww_D",
+    "email": "vinodkumarmaths@gmail.com",
+    "username": "Mr. Vinod Kuma",
+    "passwordHash": "$2a$10$ZF6e6v1lBzPagS7h77kmGuTTG/ZMPAJcykNKVA0dlaCw254FAO/gS",
+    "role": "faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_cse",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_EelAQXUklp51NlFK"
+        },
+        {
+          "branch": "br_ece",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_xFI86-JQjMVHUro-"
+        },
+        {
+          "branch": "br_aiml",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_7I3klRrulzwMczjB"
+        },
+        {
+          "branch": "br_cyber",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_kGGD6BeByGAddVhm"
+        }
+      ]
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:54:02.489Z"
+  },
+  {
+    "id": "0PaITXMo0JRzM5Ud",
+    "email": "rameshguptaprojects@gmail.com",
+    "username": "Prof. Ramesh Gupta",
+    "passwordHash": "$2a$10$xBdzGC6CcoxPW0YeFxcfJ.HU553gYkk46M2Qv4j14dFaJGM8Ib9oy",
+    "role": "faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_cse",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_HBn1pFYpnXvYZfAg"
+        },
+        {
+          "branch": "br_ece",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_yXHc1VFpAI34v9Y6"
+        },
+        {
+          "branch": "br_aiml",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_bD4hCyntGRC8exQf"
+        },
+        {
+          "branch": "br_cyber",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_1CSEi21hOuzR6XpO"
+        },
+        {
+          "branch": "br_cse",
+          "year": 1,
+          "semester": 1,
+          "section": "ALL",
+          "subjectId": "sub_i7NvaEEXzRV1UGmu"
+        }
+      ]
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T12:55:06.072Z"
+  },
+  {
+    "id": "_90u5oZUelVF1qhE",
+    "email": "lakshmiiyercommunication@gmail.com",
+    "username": "Ms. Lakshmi Iyer",
+    "passwordHash": "$2a$10$SuHyJObDxadJidQmBU.Ef.bEMO/hkDP6e0uR7HSm0/LeWIe21.ySa",
+    "role": "faculty",
+    "profile": {
+      "assignments": [
+        {
+          "branch": "br_cse",
+          "year": 2,
+          "semester": 4,
+          "section": "ALL",
+          "subjectId": "sub_CcGQU5uoZO68uxNp"
+        },
+        {
+          "branch": "br_ece",
+          "year": 2,
+          "semester": 4,
+          "section": "ALL",
+          "subjectId": "sub_ZFmqYBLwd_e3DK1H"
+        },
+        {
+          "branch": "br_aiml",
+          "year": 2,
+          "semester": 4,
+          "section": "ALL",
+          "subjectId": "sub_t6hRf_vd-dNIAnCR"
+        },
+        {
+          "branch": "br_cyber",
+          "year": 2,
+          "semester": 4,
+          "section": "ALL",
+          "subjectId": "sub_e9qsN71E5F7k77RH"
+        }
+      ]
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-26T16:06:21.846Z"
+  },
+  {
+    "id": "kfs4mnrTq_SZMe8L",
+    "email": "tashvi@gmail.com",
+    "username": "Tashvi",
+    "passwordHash": "$2a$10$weie1w5RBWStSXKCXOH92eE37.k6W2rZjXUo9TPiuKjSsO1gQhEm2",
+    "role": "student",
+    "profile": {
+      "branch": "br_cse",
+      "year": 1,
+      "semester": 1,
+      "section": "A",
+      "rollNo": "245U1A05Z0"
+    },
+    "onboardingComplete": true,
+    "createdAt": "2026-05-31T14:35:00.755Z"
+  }
+]

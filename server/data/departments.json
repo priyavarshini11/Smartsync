@@ -1,0 +1,1406 @@
+{
+  "branches": [
+    {
+      "id": "br_cse",
+      "name": "CSE (Core)",
+      "shortName": "CSE",
+      "colorHex": "#c564f2",
+      "colorVar": "--color-cse",
+      "years": [
+        {
+          "id": "yr_cse_1",
+          "level": 1,
+          "name": "1st Year",
+          "semesters": [
+            {
+              "id": "sem_cse_1_1",
+              "number": 1,
+              "name": "Semester 1",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_EelAQXUklp51NlFK",
+                  "name": "Matrics & calculus ",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_i7NvaEEXzRV1UGmu",
+                  "name": "English ",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_LXIgf_JV8p41jCX6",
+                  "name": "English ",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_uaOgSziIn1sBRIhm",
+                  "name": "Programming for problem solving",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_NHOBCmKx2PtM6W1f",
+                  "name": "Programming for problem solving",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_3uFnfR5ZQUA-haN0",
+                  "name": "Engineering chemistry",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_i8JHTXUmssd1CXN4",
+                  "name": "Engineering chemistry",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_HBn1pFYpnXvYZfAg",
+                  "name": "communication skills",
+                  "type": "theory"
+                }
+              ]
+            },
+            {
+              "id": "sem_cse_1_2",
+              "number": 2,
+              "name": "Semester 2",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_MJZby4c5lUxthwWd",
+                  "name": "Applied physics",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_UrERfHPO7Jx2rOrH",
+                  "name": "Applied physics",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_4mH6dQbJLOQ9B46J",
+                  "name": "BEE",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_vCW3B79GicxEtuPm",
+                  "name": "BEE",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_jhoLOMEHeE1nyfu5",
+                  "name": "Python programming ",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_ZLV1iL1zoMO0BPQ_",
+                  "name": "Python programming ",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_h4m6y7Q0lnOieAZu",
+                  "name": "Multivariable & vector calculus ",
+                  "type": "theory"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "yr_cse_2",
+          "level": 2,
+          "name": "2nd Year",
+          "semesters": [
+            {
+              "id": "sem_cse_2_1",
+              "number": 3,
+              "name": "Semester 3",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_cse_2_1_1",
+                  "name": "Database Management Systems",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_cse_2_1_2",
+                  "name": "DBMS Lab",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_o6lzatOEofJEY9rN",
+                  "name": "JAVA",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_oKf4R7hsRc8nKsuK",
+                  "name": "JAVA",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_nFuxCfSBpn2NU01Q",
+                  "name": "Power BI",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_KQIYPjZT1G5rxDX4",
+                  "name": "DM",
+                  "type": "theory"
+                }
+              ]
+            },
+            {
+              "id": "sem_cse_2_2",
+              "number": 4,
+              "name": "Semester 4",
+              "sections": [
+                "A",
+                "B",
+                "C",
+                "D"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_4LgxR9tpBGQarlv4",
+                  "name": "COSM",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_2bW0WoAl_OMqfLVp",
+                  "name": "OS",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_10A6BHHjuh6lvUYn",
+                  "name": "OS",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_U_4wrW6OlcHPyTnH",
+                  "name": "DBMS",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_R9PRwgm47GhUMBGJ",
+                  "name": "DBMS",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub__UJ9rSKVnekX1ac0",
+                  "name": "SE",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_CcGQU5uoZO68uxNp",
+                  "name": "RTRP",
+                  "type": "theory"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "yr_cse_3",
+          "level": 3,
+          "name": "3rd Year",
+          "semesters": [
+            {
+              "id": "sem_cse_3_1",
+              "number": 5,
+              "name": "Semester 5",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_cse_3_1_1",
+                  "name": "Software Engineering",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_cse_3_1_2",
+                  "name": "Machine Learning",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_cse_3_1_3",
+                  "name": "ML Lab",
+                  "type": "lab"
+                }
+              ]
+            },
+            {
+              "id": "sem_cse_3_2",
+              "number": 6,
+              "name": "Semester 6",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_cse_3_2_1",
+                  "name": "Compiler Design",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_cse_3_2_2",
+                  "name": "Web Technologies",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_cse_3_2_3",
+                  "name": "Web Tech Lab",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_7L3mIPg4ahjT8Hxd",
+                  "name": "AI",
+                  "type": "theory"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "yr_cse_4",
+          "level": 4,
+          "name": "4th Year",
+          "semesters": [
+            {
+              "id": "sem_cse_4_1",
+              "number": 7,
+              "name": "Semester 7",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_cse_4_1_1",
+                  "name": "Cloud Computing",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_cse_4_1_2",
+                  "name": "Project Phase I",
+                  "type": "lab"
+                }
+              ]
+            },
+            {
+              "id": "sem_cse_4_2",
+              "number": 8,
+              "name": "Semester 8",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_cse_4_2_1",
+                  "name": "Project Phase II",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_cse_4_2_2",
+                  "name": "Internship",
+                  "type": "lab"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "br_ece",
+      "name": "ECE",
+      "shortName": "ECE",
+      "colorHex": "#a28cf3",
+      "colorVar": "--color-ece",
+      "years": [
+        {
+          "id": "yr_ece_1",
+          "level": 1,
+          "name": "1st Year",
+          "semesters": [
+            {
+              "id": "sem_ece_1_1",
+              "number": 1,
+              "name": "Semester 1",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_ece_1_1_1",
+                  "name": "Engineering Mathematics I",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_ece_1_1_2",
+                  "name": "Basic Electronics",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_ece_1_1_3",
+                  "name": "Electronics Lab",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_Cb-6t0x2uGlZgpzN",
+                  "name": "ABCD",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_w7SXFlPwpf8-8DS9",
+                  "name": "QWERTY",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_xFI86-JQjMVHUro-",
+                  "name": "Matrics & calculus",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_yXHc1VFpAI34v9Y6",
+                  "name": "communication skills",
+                  "type": "theory"
+                }
+              ]
+            },
+            {
+              "id": "sem_ece_1_2",
+              "number": 2,
+              "name": "Semester 2",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_ece_1_2_1",
+                  "name": "Circuit Theory",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_ece_1_2_2",
+                  "name": "Signals & Systems",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_T8Bz8t_dOJA84TVn",
+                  "name": "AGH",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_ZtpNH4DI168ZQCei",
+                  "name": "ALIKE",
+                  "type": "theory"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "yr_ece_2",
+          "level": 2,
+          "name": "2nd Year",
+          "semesters": [
+            {
+              "id": "sem_ece_2_1",
+              "number": 3,
+              "name": "Semester 3",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_ece_2_1_1",
+                  "name": "Analog Communications",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_ece_2_1_2",
+                  "name": "Microprocessors",
+                  "type": "theory"
+                }
+              ]
+            },
+            {
+              "id": "sem_ece_2_2",
+              "number": 4,
+              "name": "Semester 4",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_ece_2_2_1",
+                  "name": "Digital Communications",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_ece_2_2_2",
+                  "name": "VLSI Design",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_M_dF2tb41OXd_e1g",
+                  "name": "mecs",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_uVN4WZVhA5Ehpfq_",
+                  "name": "alike2",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_ZFmqYBLwd_e3DK1H",
+                  "name": "RTRP",
+                  "type": "theory"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "yr_ece_3",
+          "level": 3,
+          "name": "3rd Year",
+          "semesters": [
+            {
+              "id": "sem_ece_3_1",
+              "number": 5,
+              "name": "Semester 5",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_ece_3_2",
+              "number": 6,
+              "name": "Semester 6",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_ece_4",
+          "level": 4,
+          "name": "4th Year",
+          "semesters": [
+            {
+              "id": "sem_ece_4_1",
+              "number": 7,
+              "name": "Semester 7",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_ece_4_2",
+              "number": 8,
+              "name": "Semester 8",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "br_aiml",
+      "name": "AIML",
+      "shortName": "AIML",
+      "colorHex": "#74C3A3",
+      "colorVar": "--color-aiml",
+      "years": [
+        {
+          "id": "yr_aiml_1",
+          "level": 1,
+          "name": "1st Year",
+          "semesters": [
+            {
+              "id": "sem_aiml_1_1",
+              "number": 1,
+              "name": "Semester 1",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_aiml_1_1_1",
+                  "name": "Linear Algebra",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_aiml_1_1_2",
+                  "name": "Python Programming",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_aiml_1_1_3",
+                  "name": "Python Lab",
+                  "type": "lab"
+                },
+                {
+                  "id": "sub_27Ddi5GSohtAQGu2",
+                  "name": "AI",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_mA_hqKzFFaMxJnlR",
+                  "name": "ML",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_bD4hCyntGRC8exQf",
+                  "name": "communication skills",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_7I3klRrulzwMczjB",
+                  "name": "Matrics & calculus",
+                  "type": "theory"
+                }
+              ]
+            },
+            {
+              "id": "sem_aiml_1_2",
+              "number": 2,
+              "name": "Semester 2",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_aiml_2",
+          "level": 2,
+          "name": "2nd Year",
+          "semesters": [
+            {
+              "id": "sem_aiml_2_1",
+              "number": 3,
+              "name": "Semester 3",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_aiml_2_2",
+              "number": 4,
+              "name": "Semester 4",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_7uRY-HFweh0-7Whw",
+                  "name": "AIML",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_ENFRBZjYtz6O2xjk",
+                  "name": "GEN AI",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_Qt-9Gl8QPkXT5jVe",
+                  "name": "RTRP",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_t6hRf_vd-dNIAnCR",
+                  "name": "RTRP",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_JcsEILuUp_dN3s36",
+                  "name": "Data Analysis",
+                  "type": "theory"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "yr_aiml_3",
+          "level": 3,
+          "name": "3rd Year",
+          "semesters": [
+            {
+              "id": "sem_aiml_3_1",
+              "number": 5,
+              "name": "Semester 5",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_aiml_3_2",
+              "number": 6,
+              "name": "Semester 6",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_aiml_4",
+          "level": 4,
+          "name": "4th Year",
+          "semesters": [
+            {
+              "id": "sem_aiml_4_1",
+              "number": 7,
+              "name": "Semester 7",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_aiml_4_2",
+              "number": 8,
+              "name": "Semester 8",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "br_cyber",
+      "name": "Cyber Security",
+      "shortName": "CYBER",
+      "colorHex": "#1d7ad7",
+      "colorVar": "--color-cyber",
+      "years": [
+        {
+          "id": "yr_cyber_1",
+          "level": 1,
+          "name": "1st Year",
+          "semesters": [
+            {
+              "id": "sem_cyber_1_1",
+              "number": 1,
+              "name": "Semester 1",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_lTpVX0Wy2TqNBIsf",
+                  "name": "Hacking",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_EB9GtHeauo2sktGF",
+                  "name": "cyber",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_1CSEi21hOuzR6XpO",
+                  "name": "communication skills",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_kGGD6BeByGAddVhm",
+                  "name": "Matrics & calculus",
+                  "type": "theory"
+                }
+              ]
+            },
+            {
+              "id": "sem_cyber_1_2",
+              "number": 2,
+              "name": "Semester 2",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_cyber_2",
+          "level": 2,
+          "name": "2nd Year",
+          "semesters": [
+            {
+              "id": "sem_cyber_2_1",
+              "number": 3,
+              "name": "Semester 3",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_cyber_2_2",
+              "number": 4,
+              "name": "Semester 4",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": [
+                {
+                  "id": "sub_nh_5aK6nQrFtBj5z",
+                  "name": "security",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_DYpqepUz9FVtqsDp",
+                  "name": "Cyber safety",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_e9qsN71E5F7k77RH",
+                  "name": "RTRP",
+                  "type": "theory"
+                },
+                {
+                  "id": "sub_BjsgTKvKVMCSdmuW",
+                  "name": "RTRP",
+                  "type": "theory"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "yr_cyber_3",
+          "level": 3,
+          "name": "3rd Year",
+          "semesters": [
+            {
+              "id": "sem_cyber_3_1",
+              "number": 5,
+              "name": "Semester 5",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_cyber_3_2",
+              "number": 6,
+              "name": "Semester 6",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_cyber_4",
+          "level": 4,
+          "name": "4th Year",
+          "semesters": [
+            {
+              "id": "sem_cyber_4_1",
+              "number": 7,
+              "name": "Semester 7",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_cyber_4_2",
+              "number": 8,
+              "name": "Semester 8",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "br_ds",
+      "name": "DS",
+      "shortName": "DS",
+      "colorHex": "#370d63",
+      "colorVar": "--color-ds",
+      "years": [
+        {
+          "id": "yr_ds_1",
+          "level": 1,
+          "name": "1st Year",
+          "semesters": [
+            {
+              "id": "sem_ds_1_1",
+              "number": 1,
+              "name": "Semester 1",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_ds_1_2",
+              "number": 2,
+              "name": "Semester 2",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_ds_2",
+          "level": 2,
+          "name": "2nd Year",
+          "semesters": [
+            {
+              "id": "sem_ds_2_1",
+              "number": 3,
+              "name": "Semester 3",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_ds_2_2",
+              "number": 4,
+              "name": "Semester 4",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_ds_3",
+          "level": 3,
+          "name": "3rd Year",
+          "semesters": [
+            {
+              "id": "sem_ds_3_1",
+              "number": 5,
+              "name": "Semester 5",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_ds_3_2",
+              "number": 6,
+              "name": "Semester 6",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_ds_4",
+          "level": 4,
+          "name": "4th Year",
+          "semesters": [
+            {
+              "id": "sem_ds_4_1",
+              "number": 7,
+              "name": "Semester 7",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_ds_4_2",
+              "number": 8,
+              "name": "Semester 8",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "br_aids",
+      "name": "AIDS",
+      "shortName": "AIDS",
+      "colorHex": "#e3168b",
+      "colorVar": "--color-aids",
+      "years": [
+        {
+          "id": "yr_aids_1",
+          "level": 1,
+          "name": "1st Year",
+          "semesters": [
+            {
+              "id": "sem_aids_1_1",
+              "number": 1,
+              "name": "Semester 1",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_aids_1_2",
+              "number": 2,
+              "name": "Semester 2",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_aids_2",
+          "level": 2,
+          "name": "2nd Year",
+          "semesters": [
+            {
+              "id": "sem_aids_2_1",
+              "number": 3,
+              "name": "Semester 3",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_aids_2_2",
+              "number": 4,
+              "name": "Semester 4",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_aids_3",
+          "level": 3,
+          "name": "3rd Year",
+          "semesters": [
+            {
+              "id": "sem_aids_3_1",
+              "number": 5,
+              "name": "Semester 5",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_aids_3_2",
+              "number": 6,
+              "name": "Semester 6",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_aids_4",
+          "level": 4,
+          "name": "4th Year",
+          "semesters": [
+            {
+              "id": "sem_aids_4_1",
+              "number": 7,
+              "name": "Semester 7",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_aids_4_2",
+              "number": 8,
+              "name": "Semester 8",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "br_mech",
+      "name": "Mechanical",
+      "shortName": "MECH",
+      "colorHex": "#99a30f",
+      "colorVar": "--color-mech",
+      "years": [
+        {
+          "id": "yr_mech_1",
+          "level": 1,
+          "name": "1st Year",
+          "semesters": [
+            {
+              "id": "sem_mech_1_1",
+              "number": 1,
+              "name": "Semester 1",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_mech_1_2",
+              "number": 2,
+              "name": "Semester 2",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_mech_2",
+          "level": 2,
+          "name": "2nd Year",
+          "semesters": [
+            {
+              "id": "sem_mech_2_1",
+              "number": 3,
+              "name": "Semester 3",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_mech_2_2",
+              "number": 4,
+              "name": "Semester 4",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_mech_3",
+          "level": 3,
+          "name": "3rd Year",
+          "semesters": [
+            {
+              "id": "sem_mech_3_1",
+              "number": 5,
+              "name": "Semester 5",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_mech_3_2",
+              "number": 6,
+              "name": "Semester 6",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_mech_4",
+          "level": 4,
+          "name": "4th Year",
+          "semesters": [
+            {
+              "id": "sem_mech_4_1",
+              "number": 7,
+              "name": "Semester 7",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_mech_4_2",
+              "number": 8,
+              "name": "Semester 8",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "br_civil",
+      "name": "Civil",
+      "shortName": "CIVIL",
+      "colorHex": "#818c4a",
+      "colorVar": "--color-civil",
+      "years": [
+        {
+          "id": "yr_civil_1",
+          "level": 1,
+          "name": "1st Year",
+          "semesters": [
+            {
+              "id": "sem_civil_1_1",
+              "number": 1,
+              "name": "Semester 1",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_civil_1_2",
+              "number": 2,
+              "name": "Semester 2",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_civil_2",
+          "level": 2,
+          "name": "2nd Year",
+          "semesters": [
+            {
+              "id": "sem_civil_2_1",
+              "number": 3,
+              "name": "Semester 3",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_civil_2_2",
+              "number": 4,
+              "name": "Semester 4",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_civil_3",
+          "level": 3,
+          "name": "3rd Year",
+          "semesters": [
+            {
+              "id": "sem_civil_3_1",
+              "number": 5,
+              "name": "Semester 5",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_civil_3_2",
+              "number": 6,
+              "name": "Semester 6",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        },
+        {
+          "id": "yr_civil_4",
+          "level": 4,
+          "name": "4th Year",
+          "semesters": [
+            {
+              "id": "sem_civil_4_1",
+              "number": 7,
+              "name": "Semester 7",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            },
+            {
+              "id": "sem_civil_4_2",
+              "number": 8,
+              "name": "Semester 8",
+              "sections": [
+                "A",
+                "B",
+                "C"
+              ],
+              "subjects": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  smart-campus:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+    volumes:
+      - smart-campus-data:/app/server/data
+      - smart-campus-uploads:/app/server/uploads
+    restart: unless-stopped
+
+volumes:
+  smart-campus-data:
+  smart-campus-uploads:

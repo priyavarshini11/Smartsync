@@ -1,0 +1,166 @@
+.splash-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #080C16; /* Deep dark navy background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+  overflow: hidden;
+}
+
+.splash-container.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* 0.0s - 0.8s: Soft gradient glow in center */
+.splash-glow-bg {
+  position: absolute;
+  width: 50vw;
+  height: 50vw;
+  max-width: 600px;
+  max-height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, rgba(6, 182, 212, 0.05) 40%, transparent 70%);
+  opacity: 0;
+  animation: glow-fade-in 5s ease-out forwards;
+  pointer-events: none;
+}
+
+.splash-brand-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  z-index: 2;
+}
+
+/* 0.8s - 1.8s: Logo fades and scales in */
+.splash-logo-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.8);
+  animation: logo-intro 4.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.8s; /* Starts at 0.8s */
+}
+
+.splash-logo-svg {
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+  margin: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* 1.8s - 2.8s: Sync motion effect (thin light trails) */
+.splash-light-trails {
+  position: absolute;
+  width: 140%;
+  height: 140%;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  opacity: 0;
+  animation: sync-trails 3.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: 1.8s; /* Starts at 1.8s */
+}
+
+.splash-light-trails::before, .splash-light-trails::after {
+  content: '';
+  position: absolute;
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+}
+
+.splash-light-trails::before {
+  border-top-color: rgba(79, 70, 229, 0.8); /* Purple trail */
+  animation: spin 2s linear infinite;
+}
+
+.splash-light-trails::after {
+  border-bottom-color: rgba(6, 182, 212, 0.8); /* Cyan trail */
+  animation: spin-reverse 2.5s linear infinite;
+}
+
+/* 2.8s - 3.8s: Text slides and fades in */
+.splash-text-container {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.splash-title {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.025em;
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: text-intro 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 2.8s; /* Starts at 2.8s */
+}
+
+/* 3.8s - 5.0s: Pulse glow at final lockup */
+.splash-logo-container::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+  opacity: 0;
+  z-index: 1;
+  animation: final-pulse 1.2s ease-out forwards;
+  animation-delay: 3.8s; /* Starts at 3.8s */
+}
+
+/* Keyframes */
+@keyframes glow-fade-in {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes logo-intro {
+  0% { opacity: 0; transform: scale(0.8); }
+  15% { opacity: 1; transform: scale(1.05); } /* Smooth over-scale */
+  25% { opacity: 1; transform: scale(1); } /* Settles around 1.85s */
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes sync-trails {
+  0% { opacity: 0; transform: scale(0.8); }
+  10% { opacity: 1; transform: scale(1); }
+  80% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.1); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes text-intro {
+  0% { opacity: 0; transform: translateX(-20px); filter: blur(4px); }
+  20% { opacity: 1; transform: translateX(0); filter: blur(0px); }
+  100% { opacity: 1; transform: translateX(0); filter: blur(0px); }
+}
+
+@keyframes final-pulse {
+  0% { opacity: 0; transform: scale(0.8); }
+  30% { opacity: 0.6; transform: scale(1.3); }
+  100% { opacity: 0; transform: scale(1.8); }
+}

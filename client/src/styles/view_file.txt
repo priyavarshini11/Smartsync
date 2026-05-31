@@ -1,0 +1,59 @@
+Created At: 2026-05-22T15:43:32Z
+Completed At: 2026-05-22T15:43:32Z
+File Path: `file:///c:/Users/mysel/OneDrive/Desktop/smart-qr/client/src/styles/global.css`
+Total Lines: 510
+Total Bytes: 17705
+Showing lines 200 to 250
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+200: }
+201: .tab-item:hover { color: var(--text-primary); }
+202: .tab-item.active { background: var(--accent); color: #fff; font-weight: 600; }
+203: 
+204: /* ---- GRID ---- */
+205: .grid { display: grid; gap: 1rem; }
+206: .grid-2 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+207: .grid-3 { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+208: .grid-4 { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+209: 
+210: /* ---- URGENCY COLORS ---- */
+211: .urgency-high { border-left: 3px solid var(--danger) !important; }
+212: .urgency-medium { border-left: 3px solid var(--warning) !important; }
+213: .urgency-low { border-left: 3px solid var(--success) !important; }
+214: 
+215: /* ---- THEME TOGGLE ---- */
+216: .theme-toggle {
+217:   position: relative; width: 48px; height: 26px;
+218:   background: var(--bg-glass-strong); border: 1px solid var(--border-glass);
+219:   border-radius: 999px; cursor: pointer; transition: all 0.3s ease;
+220: }
+221: .theme-toggle::after {
+222:   content: ''; position: absolute; top: 2px; left: 2px;
+223:   width: 20px; height: 20px; border-radius: 50%;
+224:   background: var(--accent); transition: transform 0.3s ease;
+225: }
+226: [data-theme="dark"] .theme-toggle::after { transform: translateX(22px); }
+227: 
+228: /* ---- SCROLLBAR ---- */
+229: ::-webkit-scrollbar { width: 6px; }
+230: ::-webkit-scrollbar-track { background: transparent; }
+231: ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
+232: ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+233: 
+234: /* ---- ANIMATIONS ---- */
+235: @keyframes fadeSlideUp {
+236:   from { opacity: 0; transform: translateY(12px); }
+237:   to { opacity: 1; transform: translateY(0); }
+238: }
+239: @keyframes fadeIn {
+240:   from { opacity: 0; }
+241:   to { opacity: 1; }
+242: }
+243: @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+244: @keyframes shimmer {
+245:   0% { background-position: -200% 0; }
+246:   100% { background-position: 200% 0; }
+247: }
+248: .anim-fade { animation: fadeIn 0.3s ease-out both; }
+249: .anim-stagger > * { animation: fadeSlideUp 0.35s ease-out both; }
+250: .anim-stagger > *:nth-child(1) { animation-delay: 0.05s; }
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
