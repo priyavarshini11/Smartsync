@@ -4,20 +4,24 @@ const multer = require('multer');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const { readData, writeData, generateId } = require('../utils/db');
+const { User, Resource, Department, AdminConfig, Subscription } = require('../models');
 const { authenticate, requireRole, signToken } = require('../middleware/auth');
 const { sendTargetedNotification } = require('../services/notification');
 
-// File Upload Configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '..', 'uploads'));
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    cb(null, generateId() + ext);
-  }
-});
-const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB limit
+// File Upload Configuration (Vercel = memory storage, Local = disk storage)
+const isVercel = !!process.env.VERCEL;
+const storage = isVercel
+  ? multer.memoryStorage()
+  : multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '..', 'uploads'));
+      },
+      filename: function (req, file, cb) {
+        const ext = path.extname(file.originalname);
+        cb(null, generateId() + ext);
+      }
+    });
+const upload = multer({ storage, limits: { fileSize: isVercel ? 4.5 * 1024 * 1024 : 50 * 1024 * 1024 } });
 
 // ============================================================
 // AUTH ROUTES
@@ -35,13 +39,13 @@ router.post('/auth/signup', async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 4 characters' });
     }
 
-    const users = readData('users.json');
-    if (users.find(u => u.email === email.toLowerCase())) {
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const newUser = {
+    const newUser = await User.create({
       id: generateId(),
       email: email.toLowerCase(),
       username: null,
@@ -50,13 +54,11 @@ router.post('/auth/signup', async (req, res) => {
       profile: null,
       onboardingComplete: userRole === 'faculty',
       createdAt: new Date().toISOString()
-    };
-
-    users.push(newUser);
-    writeData('users.json', users);
+    });
 
     const token = signToken(newUser.id);
-    const { passwordHash: _, ...safeUser } = newUser;
+    const userObj = newUser.toObject();
+    const { passwordHash: _, ...safeUser } = userObj;
     res.status(201).json({ token, user: safeUser });
   } catch (err) {
     console.error('Signup error:', err);
@@ -72,16 +74,21 @@ router.post('/auth/set-username', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'Username must be at least 3 characters' });
     }
 
-    const users = readData('users.json');
-    if (users.find(u => u.username && u.username.toLowerCase() === username.toLowerCase() && u.id !== req.user.id)) {
+    const existingUser = await User.findOne({
+      username: { $regex: new RegExp(`^${username}$`, 'i') },
+      id: { $ne: req.user.id }
+    });
+    if (existingUser) {
       return res.status(400).json({ error: 'Username already taken' });
     }
 
-    const userIndex = users.findIndex(u => u.id === req.user.id);
-    users[userIndex].username = username;
-    writeData('users.json', users);
+    const updatedUser = await User.findOneAndUpdate(
+      { id: req.user.id },
+      { $set: { username } },
+      { new: true }
+    ).lean();
 
-    const { passwordHash: _, ...safeUser } = users[userIndex];
+    const { passwordHash: _, ...safeUser } = updatedUser;
     res.json({ user: safeUser });
   } catch (err) {
     console.error('Set username error:', err);
@@ -97,8 +104,9 @@ router.post('/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Username and password are required' });
     }
 
-    const users = readData('users.json');
-    const user = users.find(u => u.username && u.username.toLowerCase() === username.toLowerCase());
+    const user = await User.findOne({
+      username: { $regex: new RegExp(`^${username}$`, 'i') }
+    }).lean();
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -136,33 +144,29 @@ router.post('/auth/login', async (req, res) => {
 });
 
 // GET /api/auth/me — Get current user
-router.get('/auth/me', authenticate, (req, res) => {
+router.get('/auth/me', authenticate, async (req, res) => {
   const { passwordHash: _, ...safeUser } = req.user;
   res.json({ user: safeUser });
 });
 
 // ============================================================
 // ADMIN PIN AUTH SYSTEM
-// ============================================================
-
-// Helper: read admin config (returns object, not array)
-function readAdminConfig() {
-  const data = require('../utils/db').readData('admin_config.json');
-  // readData returns [] for missing files; coerce to object
-  if (Array.isArray(data) && data.length === 0) return { setupComplete: false };
-  return data;
+// ======================================================// Helper: read admin config (returns object, not array)
+async function readAdminConfig() {
+  const data = await AdminConfig.findOne({}).lean();
+  return data || { setupComplete: false };
 }
 
 // GET /api/admin/auth/status — Check if admin setup is complete
-router.get('/admin/auth/status', (req, res) => {
-  const config = readAdminConfig();
+router.get('/admin/auth/status', async (req, res) => {
+  const config = await readAdminConfig();
   res.json({ setupComplete: !!config.setupComplete });
 });
 
 // POST /api/admin/auth/setup — First-time admin setup
 router.post('/admin/auth/setup', async (req, res) => {
   try {
-    const config = readAdminConfig();
+    const config = await readAdminConfig();
     if (config.setupComplete) {
       return res.status(400).json({ error: 'Admin is already set up. Use PIN to log in.' });
     }
@@ -183,13 +187,12 @@ router.post('/admin/auth/setup', async (req, res) => {
     const pinHash = await bcrypt.hash(pin, 10);
     const recoveryKeyHash = await bcrypt.hash(recoveryKey, 10);
 
-    // Create admin user record in users.json (or find existing)
-    const users = readData('users.json');
-    let adminUser = users.find(u => u.role === 'admin' && u.username === adminId.toLowerCase());
+    // Create admin user record in users collection (or find existing)
+    let adminUser = await User.findOne({ role: 'admin', username: adminId.toLowerCase() });
 
     if (!adminUser) {
       // Create new admin user
-      adminUser = {
+      adminUser = await User.create({
         id: generateId(),
         email: `${adminId.toLowerCase()}@admin.internal`,
         username: adminId.toLowerCase(),
@@ -198,12 +201,14 @@ router.post('/admin/auth/setup', async (req, res) => {
         profile: null,
         onboardingComplete: true,
         createdAt: new Date().toISOString()
-      };
-      users.push(adminUser);
+      });
     } else {
-      adminUser.passwordHash = pinHash;
+      adminUser = await User.findOneAndUpdate(
+        { id: adminUser.id },
+        { $set: { passwordHash: pinHash } },
+        { new: true }
+      );
     }
-    writeData('users.json', users);
 
     // Save admin config
     const newConfig = {
@@ -214,7 +219,7 @@ router.post('/admin/auth/setup', async (req, res) => {
       recoveryKeyHash,
       createdAt: new Date().toISOString()
     };
-    writeData('admin_config.json', newConfig);
+    await AdminConfig.replaceOne({}, newConfig, { upsert: true });
 
     // Return credentials (ONLY TIME they are shown)
     res.status(201).json({
@@ -231,21 +236,20 @@ router.post('/admin/auth/setup', async (req, res) => {
 });
 
 // POST /api/admin/auth/login — Admin login with ID + PIN
-router.post('/admin/auth/login', async (req, res) => {
+router.post('/api/admin/auth/login', async (req, res) => {
   try {
     const { adminId, pin } = req.body;
     if (!adminId || !pin) {
       return res.status(400).json({ error: 'Admin ID and PIN are required.' });
     }
 
-    const config = readAdminConfig();
+    const config = await readAdminConfig();
     if (!config.setupComplete) {
       return res.status(400).json({ error: 'Admin not set up yet.' });
     }
 
     // Find admin user first
-    const users = readData('users.json');
-    const adminUser = users.find(u => u.id === config.adminUserId);
+    const adminUser = await User.findOne({ id: config.adminUserId }).lean();
 
     // Verify admin ID (allow either original adminId or the currently set username)
     const submittedId = adminId.toLowerCase();
@@ -276,21 +280,20 @@ router.post('/admin/auth/login', async (req, res) => {
 });
 
 // POST /api/admin/auth/reset-pin — Reset PIN using recovery key
-router.post('/admin/auth/reset-pin', async (req, res) => {
+router.post('/api/admin/auth/reset-pin', async (req, res) => {
   try {
     const { adminId, recoveryKey } = req.body;
     if (!adminId || !recoveryKey) {
       return res.status(400).json({ error: 'Admin ID and Recovery Key are required.' });
     }
 
-    const config = readAdminConfig();
+    const config = await readAdminConfig();
     if (!config.setupComplete) {
       return res.status(400).json({ error: 'Admin not set up yet.' });
     }
 
     // Find admin user
-    const users = readData('users.json');
-    const adminUser = users.find(u => u.id === config.adminUserId);
+    const adminUser = await User.findOne({ id: config.adminUserId }).lean();
 
     // Verify admin ID (allow either original adminId or current username)
     const submittedId = adminId.toLowerCase();
@@ -320,14 +323,13 @@ router.post('/admin/auth/reset-pin', async (req, res) => {
     config.pinHash = newPinHash;
     config.recoveryKeyHash = newRecoveryKeyHash;
     config.lastResetAt = new Date().toISOString();
-    writeData('admin_config.json', config);
+    await AdminConfig.replaceOne({}, config, { upsert: true });
 
     // Update user record
-    const userIndex = users.findIndex(u => u.id === config.adminUserId);
-    if (userIndex >= 0) {
-      users[userIndex].passwordHash = newPinHash;
-      writeData('users.json', users);
-    }
+    await User.updateOne(
+      { id: config.adminUserId },
+      { $set: { passwordHash: newPinHash } }
+    );
 
     res.json({
       success: true,
@@ -349,13 +351,18 @@ router.post('/auth/onboarding', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'All profile fields are required' });
     }
 
-    const users = readData('users.json');
-    const userIndex = users.findIndex(u => u.id === req.user.id);
-    users[userIndex].profile = { branch, year: Number(year), semester: Number(semester), section, rollNo: rollNo || '' };
-    users[userIndex].onboardingComplete = true;
-    writeData('users.json', users);
+    const updatedUser = await User.findOneAndUpdate(
+      { id: req.user.id },
+      {
+        $set: {
+          profile: { branch, year: Number(year), semester: Number(semester), section, rollNo: rollNo || '' },
+          onboardingComplete: true
+        }
+      },
+      { new: true }
+    ).lean();
 
-    const { passwordHash: _, ...safeUser } = users[userIndex];
+    const { passwordHash: _, ...safeUser } = updatedUser;
     res.json({ user: safeUser });
   } catch (err) {
     console.error('Onboarding error:', err);
@@ -371,11 +378,9 @@ router.patch('/auth/student-rollno', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'Roll No is required' });
     }
 
-    const users = readData('users.json');
-    const userIndex = users.findIndex(u => u.id === req.user.id);
-    if (userIndex === -1) return res.status(404).json({ error: 'User not found' });
+    const targetUser = await User.findOne({ id: req.user.id }).lean();
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
 
-    const targetUser = users[userIndex];
     if (targetUser.role !== 'student' && targetUser.role !== 'cr') {
       return res.status(400).json({ error: 'This action is only allowed for students' });
     }
@@ -384,13 +389,13 @@ router.patch('/auth/student-rollno', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'Roll No is already set and cannot be changed' });
     }
 
-    if (!targetUser.profile) {
-      targetUser.profile = {};
-    }
-    targetUser.profile.rollNo = rollNo.trim();
-    writeData('users.json', users);
+    const updatedUser = await User.findOneAndUpdate(
+      { id: req.user.id },
+      { $set: { 'profile.rollNo': rollNo.trim() } },
+      { new: true }
+    ).lean();
 
-    const { passwordHash: _, ...safeUser } = targetUser;
+    const { passwordHash: _, ...safeUser } = updatedUser;
     res.json({ user: safeUser });
   } catch (err) {
     console.error('Update roll no error:', err);
@@ -403,29 +408,29 @@ router.patch('/auth/student-rollno', authenticate, async (req, res) => {
 // ============================================================
 
 // GET /api/taxonomy — Get full taxonomy tree
-router.get('/taxonomy', (req, res) => {
-  const data = readData('departments.json');
+router.get('/taxonomy', async (req, res) => {
+  const data = await Department.findOne({}).lean() || { branches: [] };
   res.json(data.branches || []);
 });
 
 // GET /api/taxonomy/:branchId — Get single branch
-router.get('/taxonomy/:branchId', (req, res) => {
-  const data = readData('departments.json');
+router.get('/taxonomy/:branchId', async (req, res) => {
+  const data = await Department.findOne({}).lean() || { branches: [] };
   const branch = (data.branches || []).find(b => b.id === req.params.branchId);
   if (!branch) return res.status(404).json({ error: 'Branch not found' });
   res.json(branch);
 });
 
 // POST /api/taxonomy/branches — Add a new branch (Admin only)
-router.post('/taxonomy/branches', authenticate, requireRole('admin'), (req, res) => {
+router.post('/taxonomy/branches', authenticate, requireRole('admin'), async (req, res) => {
   try {
     const { name, shortName, colorHex } = req.body;
     if (!name) return res.status(400).json({ error: 'Branch name is required' });
 
-    const data = readData('departments.json');
+    const data = await Department.findOne({}).lean() || { branches: [] };
     const branchId = 'br_' + (shortName || name).toLowerCase().replace(/\s+/g, '_');
     
-    if (data.branches.find(b => b.id === branchId)) {
+    if ((data.branches || []).find(b => b.id === branchId)) {
       return res.status(400).json({ error: 'Branch already exists' });
     }
 
@@ -446,31 +451,28 @@ router.post('/taxonomy/branches', authenticate, requireRole('admin'), (req, res)
       }))
     };
 
+    if (!data.branches) data.branches = [];
     data.branches.push(newBranch);
-    writeData('departments.json', data);
+    await Department.replaceOne({}, data, { upsert: true });
     res.status(201).json(newBranch);
   } catch (err) {
-    console.error('Add branch error:', err);
+    console.error('Create branch error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// PATCH /api/taxonomy/branches/:branchId/color - Update branch color (Admin only)
-router.patch('/taxonomy/branches/:branchId/color', authenticate, requireRole('admin'), (req, res) => {
+// PATCH /api/taxonomy/branches/:branchId/color — Update branch color (Admin only)
+router.patch('/taxonomy/branches/:branchId/color', authenticate, requireRole('admin'), async (req, res) => {
   try {
     const { colorHex } = req.body;
-    if (!colorHex) return res.status(400).json({ error: 'colorHex is required' });
+    if (!colorHex) return res.status(400).json({ error: 'Color hex is required' });
 
-    if (req.user.role === 'admin_faculty' && req.user.profile?.branch !== req.params.branchId) {
-      return res.status(403).json({ error: 'Not authorized for this branch' });
-    }
-
-    const data = readData('departments.json');
-    const branch = data.branches.find(b => b.id === req.params.branchId);
+    const data = await Department.findOne({}).lean() || { branches: [] };
+    const branch = (data.branches || []).find(b => b.id === req.params.branchId);
     if (!branch) return res.status(404).json({ error: 'Branch not found' });
 
     branch.colorHex = colorHex;
-    writeData('departments.json', data);
+    await Department.replaceOne({}, data, { upsert: true });
     
     res.json({ success: true, colorHex });
   } catch (err) {
@@ -480,19 +482,17 @@ router.patch('/taxonomy/branches/:branchId/color', authenticate, requireRole('ad
 });
 
 // DELETE /api/taxonomy/branches/:branchId — Delete a branch (Admin only)
-router.delete('/taxonomy/branches/:branchId', authenticate, requireRole('admin'), (req, res) => {
+router.delete('/taxonomy/branches/:branchId', authenticate, requireRole('admin'), async (req, res) => {
   try {
-    const data = readData('departments.json');
-    const index = data.branches.findIndex(b => b.id === req.params.branchId);
+    const data = await Department.findOne({}).lean() || { branches: [] };
+    const index = (data.branches || []).findIndex(b => b.id === req.params.branchId);
     if (index === -1) return res.status(404).json({ error: 'Branch not found' });
     
     data.branches.splice(index, 1);
-    writeData('departments.json', data);
+    await Department.replaceOne({}, data, { upsert: true });
 
     // Also delete resources targeting this branch
-    let resources = readData('resources.json');
-    resources = resources.filter(r => r.targetBranch !== req.params.branchId);
-    writeData('resources.json', resources);
+    await Resource.deleteMany({ targetBranch: req.params.branchId });
 
     res.json({ success: true });
   } catch (err) {
@@ -502,7 +502,7 @@ router.delete('/taxonomy/branches/:branchId', authenticate, requireRole('admin')
 });
 
 // POST /api/taxonomy/sections — Add section to a semester (Admin only)
-router.post('/taxonomy/sections', authenticate, requireRole('admin'), (req, res) => {
+router.post('/taxonomy/sections', authenticate, requireRole('admin'), async (req, res) => {
   try {
     const { branchId, yearLevel, semesterNumber, section } = req.body;
     if (!branchId || !yearLevel || !semesterNumber || !section) {
@@ -513,8 +513,8 @@ router.post('/taxonomy/sections', authenticate, requireRole('admin'), (req, res)
       return res.status(403).json({ error: 'Not authorized for this branch' });
     }
 
-    const data = readData('departments.json');
-    const branch = data.branches.find(b => b.id === branchId);
+    const data = await Department.findOne({}).lean() || { branches: [] };
+    const branch = (data.branches || []).find(b => b.id === branchId);
     if (!branch) return res.status(404).json({ error: 'Branch not found' });
 
     const year = branch.years.find(y => y.level === Number(yearLevel));
@@ -528,7 +528,7 @@ router.post('/taxonomy/sections', authenticate, requireRole('admin'), (req, res)
     }
 
     semester.sections.push(section.toUpperCase());
-    writeData('departments.json', data);
+    await Department.replaceOne({}, data, { upsert: true });
     res.json({ success: true, sections: semester.sections });
   } catch (err) {
     console.error('Add section error:', err);
@@ -537,7 +537,7 @@ router.post('/taxonomy/sections', authenticate, requireRole('admin'), (req, res)
 });
 
 // DELETE /api/taxonomy/sections — Remove section from a semester (Admin only)
-router.delete('/taxonomy/sections', authenticate, requireRole('admin'), (req, res) => {
+router.delete('/taxonomy/sections', authenticate, requireRole('admin'), async (req, res) => {
   try {
     const { branchId, yearLevel, semesterNumber, section } = req.body;
     
@@ -545,8 +545,8 @@ router.delete('/taxonomy/sections', authenticate, requireRole('admin'), (req, re
       return res.status(403).json({ error: 'Not authorized for this branch' });
     }
 
-    const data = readData('departments.json');
-    const branch = data.branches.find(b => b.id === branchId);
+    const data = await Department.findOne({}).lean() || { branches: [] };
+    const branch = (data.branches || []).find(b => b.id === branchId);
     if (!branch) return res.status(404).json({ error: 'Branch not found' });
 
     const year = branch.years.find(y => y.level === Number(yearLevel));
@@ -554,7 +554,7 @@ router.delete('/taxonomy/sections', authenticate, requireRole('admin'), (req, re
     if (!semester) return res.status(404).json({ error: 'Semester not found' });
 
     semester.sections = semester.sections.filter(s => s !== section.toUpperCase());
-    writeData('departments.json', data);
+    await Department.replaceOne({}, data, { upsert: true });
     res.json({ success: true, sections: semester.sections });
   } catch (err) {
     console.error('Remove section error:', err);
@@ -563,7 +563,7 @@ router.delete('/taxonomy/sections', authenticate, requireRole('admin'), (req, re
 });
 
 // PATCH /api/taxonomy/sections — Rename section (Admin only)
-router.patch('/taxonomy/sections', authenticate, requireRole('admin'), (req, res) => {
+router.patch('/taxonomy/sections', authenticate, requireRole('admin'), async (req, res) => {
   try {
     const { branchId, yearLevel, semesterNumber, oldSection, newSection } = req.body;
     if (!branchId || !yearLevel || !semesterNumber || !oldSection || !newSection) {
@@ -574,8 +574,8 @@ router.patch('/taxonomy/sections', authenticate, requireRole('admin'), (req, res
       return res.status(403).json({ error: 'Not authorized for this branch' });
     }
 
-    const data = readData('departments.json');
-    const branch = data.branches.find(b => b.id === branchId);
+    const data = await Department.findOne({}).lean() || { branches: [] };
+    const branch = (data.branches || []).find(b => b.id === branchId);
     if (!branch) return res.status(404).json({ error: 'Branch not found' });
 
     const year = branch.years.find(y => y.level === Number(yearLevel));
@@ -593,29 +593,19 @@ router.patch('/taxonomy/sections', authenticate, requireRole('admin'), (req, res
     }
 
     semester.sections = semester.sections.map(s => s === oldSec ? newSec : s);
-    writeData('departments.json', data);
+    await Department.replaceOne({}, data, { upsert: true });
 
     // Update resources targeting this section
-    const resources = readData('resources.json');
-    let resourcesUpdated = false;
-    for (const r of resources) {
-      if (r.targetBranch === branchId && r.targetYear === Number(yearLevel) && r.targetSemester === Number(semesterNumber) && r.targetSection === oldSec) {
-        r.targetSection = newSec;
-        resourcesUpdated = true;
-      }
-    }
-    if (resourcesUpdated) writeData('resources.json', resources);
+    await Resource.updateMany(
+      { targetBranch: branchId, targetYear: Number(yearLevel), targetSemester: Number(semesterNumber), targetSection: oldSec },
+      { $set: { targetSection: newSec } }
+    );
 
     // Update users targeting this section
-    const users = readData('users.json');
-    let usersUpdated = false;
-    for (const u of users) {
-      if (u.profile && u.profile.branch === branchId && u.profile.year === Number(yearLevel) && u.profile.semester === Number(semesterNumber) && u.profile.section === oldSec) {
-        u.profile.section = newSec;
-        usersUpdated = true;
-      }
-    }
-    if (usersUpdated) writeData('users.json', users);
+    await User.updateMany(
+      { 'profile.branch': branchId, 'profile.year': Number(yearLevel), 'profile.semester': Number(semesterNumber), 'profile.section': oldSec },
+      { $set: { 'profile.section': newSec } }
+    );
 
     res.json({ success: true, sections: semester.sections });
   } catch (err) {
@@ -625,7 +615,7 @@ router.patch('/taxonomy/sections', authenticate, requireRole('admin'), (req, res
 });
 
 // POST /api/taxonomy/subjects — Add subject to a semester (Admin/Faculty)
-router.post('/taxonomy/subjects', authenticate, requireRole('admin', 'faculty'), (req, res) => {
+router.post('/taxonomy/subjects', authenticate, requireRole('admin', 'faculty'), async (req, res) => {
   try {
     const { branchId, yearLevel, semesterNumber, name, type } = req.body;
     if (!branchId || !yearLevel || !semesterNumber || !name || !type) {
@@ -639,8 +629,8 @@ router.post('/taxonomy/subjects', authenticate, requireRole('admin', 'faculty'),
       return res.status(403).json({ error: 'Not authorized for this branch' });
     }
 
-    const data = readData('departments.json');
-    const branch = data.branches.find(b => b.id === branchId);
+    const data = await Department.findOne({}).lean() || { branches: [] };
+    const branch = (data.branches || []).find(b => b.id === branchId);
     if (!branch) return res.status(404).json({ error: 'Branch not found' });
 
     const year = branch.years.find(y => y.level === Number(yearLevel));
@@ -649,7 +639,7 @@ router.post('/taxonomy/subjects', authenticate, requireRole('admin', 'faculty'),
 
     const subjectId = 'sub_' + generateId();
     semester.subjects.push({ id: subjectId, name, type });
-    writeData('departments.json', data);
+    await Department.replaceOne({}, data, { upsert: true });
     res.status(201).json({ id: subjectId, name, type });
   } catch (err) {
     console.error('Add subject error:', err);
@@ -658,11 +648,11 @@ router.post('/taxonomy/subjects', authenticate, requireRole('admin', 'faculty'),
 });
 
 // DELETE /api/taxonomy/subjects/:subjectId — Delete subject (Admin only)
-router.delete('/taxonomy/subjects/:subjectId', authenticate, requireRole('admin'), (req, res) => {
+router.delete('/taxonomy/subjects/:subjectId', authenticate, requireRole('admin'), async (req, res) => {
   try {
-    const data = readData('departments.json');
+    const data = await Department.findOne({}).lean() || { branches: [] };
     let found = false;
-    for (const branch of data.branches) {
+    for (const branch of (data.branches || [])) {
       for (const year of branch.years) {
         for (const semester of year.semesters) {
           const idx = semester.subjects.findIndex(s => s.id === req.params.subjectId);
@@ -681,12 +671,10 @@ router.delete('/taxonomy/subjects/:subjectId', authenticate, requireRole('admin'
     }
     if (!found) return res.status(404).json({ error: 'Subject not found' });
 
-    writeData('departments.json', data);
+    await Department.replaceOne({}, data, { upsert: true });
 
     // Remove resources for this subject
-    let resources = readData('resources.json');
-    resources = resources.filter(r => r.subjectId !== req.params.subjectId);
-    writeData('resources.json', resources);
+    await Resource.deleteMany({ subjectId: req.params.subjectId });
 
     res.json({ success: true });
   } catch (err) {
@@ -696,13 +684,13 @@ router.delete('/taxonomy/subjects/:subjectId', authenticate, requireRole('admin'
 });
 
 // PATCH /api/taxonomy/subjects/:subjectId — Update subject (Admin only)
-router.patch('/taxonomy/subjects/:subjectId', authenticate, requireRole('admin'), (req, res) => {
+router.patch('/taxonomy/subjects/:subjectId', authenticate, requireRole('admin'), async (req, res) => {
   try {
     const { name, type } = req.body;
-    const data = readData('departments.json');
+    const data = await Department.findOne({}).lean() || { branches: [] };
     let subject = null;
 
-    for (const branch of data.branches) {
+    for (const branch of (data.branches || [])) {
       for (const year of branch.years) {
         for (const semester of year.semesters) {
           const s = semester.subjects.find(sub => sub.id === req.params.subjectId);
@@ -724,7 +712,7 @@ router.patch('/taxonomy/subjects/:subjectId', authenticate, requireRole('admin')
     if (name) subject.name = name;
     if (type) subject.type = type;
 
-    writeData('departments.json', data);
+    await Department.replaceOne({}, data, { upsert: true });
     res.json(subject);
   } catch (err) {
     console.error('Update subject error:', err);
@@ -737,7 +725,7 @@ router.patch('/taxonomy/subjects/:subjectId', authenticate, requireRole('admin')
 // ============================================================
 
 // POST /api/resources/upload — Upload resource (Faculty/Admin)
-router.post('/resources/upload', authenticate, requireRole('faculty', 'admin'), upload.single('file'), (req, res) => {
+router.post('/resources/upload', authenticate, requireRole('faculty', 'admin'), upload.single('file'), async (req, res) => {
   try {
     let { title, type, targetBranch, targetYear, targetSemester, targetSection, subjectId, subjectType, categoryHeading, startDate, endDate, expirationDate, notify, textContent, pinShape } = req.body;
 
@@ -757,16 +745,35 @@ router.post('/resources/upload', authenticate, requireRole('faculty', 'admin'), 
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const fileUrl = req.file ? `/uploads/${req.file.filename}` : req.body.linkUrl || '';
+    let fileUrl = '';
+    if (req.file) {
+      if (req.file.buffer) {
+        // Vercel serverless: upload to Vercel Blob storage
+        try {
+          const { put } = require('@vercel/blob');
+          const blob = await put(req.file.originalname, req.file.buffer, {
+            access: 'public',
+            contentType: req.file.mimetype
+          });
+          fileUrl = blob.url;
+        } catch (e) {
+          return res.status(400).json({ error: 'File uploads require BLOB_READ_WRITE_TOKEN. Please provide a link URL instead.' });
+        }
+      } else {
+        // Local dev: file saved to disk by multer
+        fileUrl = `/uploads/${req.file.filename}`;
+      }
+    } else {
+      fileUrl = req.body.linkUrl || '';
+    }
 
-    const resources = readData('resources.json');
     const newResources = [];
-    // If subjectId is selected, lookup its precise taxonomy in departments.json
+    // If subjectId is selected, lookup its precise taxonomy in departments
     let subjectTaxonomy = null;
     if (subjectId && subjectId !== 'none') {
       try {
-        const depts = readData('departments.json');
-        for (const b of depts.branches) {
+        const depts = await Department.findOne({}).lean() || { branches: [] };
+        for (const b of (depts.branches || [])) {
           for (const y of b.years) {
             for (const s of y.semesters) {
               const sub = s.subjects.find(x => x.id === subjectId);
@@ -836,16 +843,17 @@ router.post('/resources/upload', authenticate, requireRole('faculty', 'admin'), 
       });
     });
 
-    resources.push(...newResources);
-    writeData('resources.json', resources);
+    if (newResources.length > 0) {
+      await Resource.insertMany(newResources);
+    }
 
     // Push notification (fire and forget)
     if (notify === 'true' || notify === true) {
       try {
         let subjectName = '';
         if (subjectId && subjectId !== 'none') {
-          const depts = readData('departments.json');
-          for (const b of depts.branches) {
+          const depts = await Department.findOne({}).lean() || { branches: [] };
+          for (const b of (depts.branches || [])) {
             for (const y of b.years) {
               for (const s of y.semesters) {
                 const sub = s.subjects.find(x => x.id === subjectId);
@@ -883,62 +891,54 @@ router.post('/resources/upload', authenticate, requireRole('faculty', 'admin'), 
 });
 
 // GET /api/resources — Get resources (filtered by user profile for students)
-router.get('/resources', authenticate, (req, res) => {
+router.get('/resources', authenticate, async (req, res) => {
   try {
-    let resources = readData('resources.json');
-    resources = resources.filter(r => !r.isDeleted);
-
-    // Auto-expire check
     const now = new Date();
-    resources = resources.filter(r => {
-      if (r.expirationDate && new Date(r.expirationDate) < now) {
-        return false; // expired
-      }
-      return true;
-    });
+    const query = {
+      isDeleted: false,
+      $or: [
+        { expirationDate: null },
+        { expirationDate: { $gt: now.toISOString() } }
+      ]
+    };
 
     // Students (and CR) only see resources for their profile
     const isStudentLike = req.user.role === 'student' || req.user.role === 'cr';
-    const isFacultyStrict = req.user.role === 'faculty'; // not admin_faculty
 
     if (isStudentLike && req.user.profile) {
       const p = req.user.profile;
-      resources = resources.filter(r =>
-        r.targetBranch === p.branch &&
-        r.targetYear === p.year &&
-        r.targetSemester === p.semester &&
-        (r.targetSection === p.section || r.targetSection === 'ALL')
-      );
+      query.targetBranch = p.branch;
+      query.targetYear = p.year;
+      query.targetSemester = p.semester;
+      query.targetSection = { $in: [p.section, 'ALL'] };
     }
 
     // Faculty & Admin Faculty (HOD) can only browse their own branch
     if (['faculty', 'admin_faculty'].includes(req.user.role) && req.user.profile?.branch) {
-      resources = resources.filter(r => r.targetBranch === req.user.profile.branch);
+      query.targetBranch = req.user.profile.branch;
     }
 
     // Optional query filters
     if (req.query.type) {
-      resources = resources.filter(r => r.type === req.query.type);
+      query.type = req.query.type;
     }
     if (req.query.subjectId) {
-      resources = resources.filter(r => r.subjectId === req.query.subjectId);
+      query.subjectId = req.query.subjectId;
     }
     if (req.query.branch) {
-      resources = resources.filter(r => r.targetBranch === req.query.branch);
+      query.targetBranch = req.query.branch;
     }
     if (req.query.year) {
-      resources = resources.filter(r => r.targetYear === Number(req.query.year));
+      query.targetYear = Number(req.query.year);
     }
     if (req.query.semester) {
-      resources = resources.filter(r => r.targetSemester === Number(req.query.semester));
+      query.targetSemester = Number(req.query.semester);
     }
     if (req.query.section) {
-      resources = resources.filter(r => r.targetSection === req.query.section);
+      query.targetSection = req.query.section;
     }
 
-    // Sort by newest first
-    resources.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
+    const resources = await Resource.find(query).sort({ createdAt: -1 }).lean();
     res.json(resources);
   } catch (err) {
     console.error('Get resources error:', err);
@@ -947,27 +947,17 @@ router.get('/resources', authenticate, (req, res) => {
 });
 
 // POST /api/resources/:id/read — Mark resource as read for the current user
-router.post('/resources/:id/read', authenticate, (req, res) => {
+router.post('/resources/:id/read', authenticate, async (req, res) => {
   try {
-    const users = readData('users.json');
-    const userIndex = users.findIndex(u => u.id === req.user.id);
-    if (userIndex === -1) return res.status(404).json({ error: 'User not found' });
+    const updatedUser = await User.findOneAndUpdate(
+      { id: req.user.id },
+      { $addToSet: { 'profile.openedResources': req.params.id } },
+      { new: true }
+    ).lean();
+
+    if (!updatedUser) return res.status(404).json({ error: 'User not found' });
     
-    const user = users[userIndex];
-    if (!user.profile) {
-      user.profile = {};
-    }
-    
-    if (!user.profile.openedResources) {
-      user.profile.openedResources = [];
-    }
-    
-    if (!user.profile.openedResources.includes(req.params.id)) {
-      user.profile.openedResources.push(req.params.id);
-      writeData('users.json', users);
-    }
-    
-    res.json({ success: true, openedResources: user.profile.openedResources });
+    res.json({ success: true, openedResources: updatedUser.profile?.openedResources || [] });
   } catch (err) {
     console.error('Mark read error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -975,63 +965,71 @@ router.post('/resources/:id/read', authenticate, (req, res) => {
 });
 
 // POST /api/resources/analytics/bulk — Get read analytics for grouped resources
-router.post('/resources/analytics/bulk', authenticate, requireRole('faculty', 'admin', 'admin_faculty'), (req, res) => {
+router.post('/resources/analytics/bulk', authenticate, requireRole('faculty', 'admin', 'admin_faculty'), async (req, res) => {
   try {
     const { resourceIds } = req.body;
     if (!Array.isArray(resourceIds)) {
       return res.status(400).json({ error: 'resourceIds must be an array' });
     }
 
-    const resources = readData('resources.json');
-    const users = readData('users.json');
-    const studentUsers = users.filter(u => u.role === 'student' || u.role === 'cr');
-
     const stats = {};
 
-    resourceIds.forEach(id => {
-      const resource = resources.find(r => r.id === id);
+    for (const id of resourceIds) {
+      const resource = await Resource.findOne({ id }).lean();
       if (!resource) {
         stats[id] = { readCount: 0, targetCount: 0 };
-        return;
+        continue;
       }
 
       // Get all resources in the same group
-      let groupResources = [resource];
+      let groupResources = [];
       if (resource.uploadGroupId) {
-        groupResources = resources.filter(r => r.uploadGroupId === resource.uploadGroupId);
+        groupResources = await Resource.find({ uploadGroupId: resource.uploadGroupId }).lean();
       } else {
-        const targetDateStr = new Date(resource.createdAt).toDateString();
-        groupResources = resources.filter(r => 
-          r.title === resource.title &&
-          r.fileUrl === resource.fileUrl &&
-          r.uploadedBy === resource.uploadedBy &&
-          new Date(r.createdAt).toDateString() === targetDateStr
-        );
+        const startOfDay = new Date(resource.createdAt);
+        startOfDay.setHours(0,0,0,0);
+        const endOfDay = new Date(resource.createdAt);
+        endOfDay.setHours(23,59,59,999);
+        
+        groupResources = await Resource.find({
+          title: resource.title,
+          fileUrl: resource.fileUrl,
+          uploadedBy: resource.uploadedBy,
+          createdAt: { $gte: startOfDay.toISOString(), $lte: endOfDay.toISOString() }
+        }).lean();
+      }
+
+      if (groupResources.length === 0) {
+        groupResources = [resource];
       }
 
       const targetedUserIds = new Set();
       const readUserIds = new Set();
 
-      groupResources.forEach(res => {
-        let targets = studentUsers;
-        if (res.targetBranch) targets = targets.filter(u => u.profile?.branch === res.targetBranch);
-        if (res.targetYear) targets = targets.filter(u => u.profile?.year === Number(res.targetYear));
-        if (res.targetSemester) targets = targets.filter(u => u.profile?.semester === Number(res.targetSemester));
-        if (res.targetSection && res.targetSection !== 'ALL') targets = targets.filter(u => u.profile?.section === res.targetSection);
+      for (const resItem of groupResources) {
+        const query = { role: { $in: ['student', 'cr'] } };
+        if (resItem.targetBranch) query['profile.branch'] = resItem.targetBranch;
+        if (resItem.targetYear) query['profile.year'] = Number(resItem.targetYear);
+        if (resItem.targetSemester) query['profile.semester'] = Number(resItem.targetSemester);
+        if (resItem.targetSection && resItem.targetSection !== 'ALL') {
+          query['profile.section'] = resItem.targetSection;
+        }
+
+        const targets = await User.find(query, { id: 1, 'profile.openedResources': 1 }).lean();
 
         targets.forEach(u => {
           targetedUserIds.add(u.id);
-          if (u.profile?.openedResources?.includes(res.id)) {
+          if (u.profile?.openedResources?.includes(resItem.id)) {
             readUserIds.add(u.id);
           }
         });
-      });
+      }
 
       stats[id] = { 
         readCount: readUserIds.size, 
         targetCount: targetedUserIds.size 
       };
-    });
+    }
 
     res.json(stats);
   } catch (err) {
@@ -1041,11 +1039,11 @@ router.post('/resources/analytics/bulk', authenticate, requireRole('faculty', 'a
 });
 
 // GET /api/resources/tweets - Get all active tweets globally
-router.get('/resources/tweets', authenticate, (req, res) => {
+router.get('/resources/tweets', authenticate, async (req, res) => {
   try {
-    const resources = readData('resources.json');
-    const tweets = resources.filter(r => r.type === 'Tweet' && !r.isDeleted)
-                            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const tweets = await Resource.find({ type: 'Tweet', isDeleted: false })
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(tweets);
   } catch (err) {
     console.error('Get tweets error:', err);
@@ -1054,17 +1052,16 @@ router.get('/resources/tweets', authenticate, (req, res) => {
 });
 
 // GET /api/resources/faculty/stats — Faculty dashboard stats
-router.get('/resources/faculty/stats', authenticate, requireRole('faculty', 'admin'), (req, res) => {
+router.get('/resources/faculty/stats', authenticate, requireRole('faculty', 'admin'), async (req, res) => {
   try {
-    const resources = readData('resources.json');
-    const myResources = resources.filter(r => r.uploadedBy === req.user.id && !r.isDeleted);
+    const myResources = await Resource.find({ uploadedBy: req.user.id, isDeleted: false }).lean();
     const activeAssignments = myResources.filter(r =>
       (r.type === 'Assignment' || r.type === 'Project') &&
       r.endDate && new Date(r.endDate) >= new Date()
     );
     const uniqueClasses = new Set(myResources.map(r => `${r.targetBranch}-${r.targetYear}-${r.targetSemester}-${r.targetSection}`));
-    const recentUploads = myResources.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
-    const taxonomy = readData('departments.json');
+    const recentUploads = [...myResources].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+    const taxonomy = await Department.findOne({}).lean() || { branches: [] };
     const branchNames = {};
     (taxonomy.branches || []).forEach(b => { branchNames[b.id] = b.shortName || b.name; });
 
@@ -1099,11 +1096,11 @@ router.get('/resources/faculty/stats', authenticate, requireRole('faculty', 'adm
 });
 
 // GET /api/resources/faculty — Get resources uploaded by current faculty
-router.get('/resources/faculty', authenticate, requireRole('faculty', 'admin'), (req, res) => {
+router.get('/resources/faculty', authenticate, requireRole('faculty', 'admin'), async (req, res) => {
   try {
-    let resources = readData('resources.json');
-    resources = resources.filter(r => r.uploadedBy === req.user.id && !r.isDeleted);
-    resources.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const resources = await Resource.find({ uploadedBy: req.user.id, isDeleted: false })
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(resources);
   } catch (err) {
     console.error('Get faculty resources error:', err);
@@ -1112,13 +1109,10 @@ router.get('/resources/faculty', authenticate, requireRole('faculty', 'admin'), 
 });
 
 // PATCH /api/resources/:id/delete — Soft delete
-router.patch('/resources/:id/delete', authenticate, requireRole('faculty', 'admin'), (req, res) => {
+router.patch('/resources/:id/delete', authenticate, requireRole('faculty', 'admin'), async (req, res) => {
   try {
-    const resources = readData('resources.json');
-    const index = resources.findIndex(r => r.id === req.params.id);
-    if (index === -1) return res.status(404).json({ error: 'Resource not found' });
-
-    const targetResource = resources[index];
+    const targetResource = await Resource.findOne({ id: req.params.id }).lean();
+    if (!targetResource) return res.status(404).json({ error: 'Resource not found' });
 
     // Enforce HOD (admin_faculty) branch boundaries
     if (req.user.role === 'admin_faculty' && targetResource.targetBranch !== req.user.profile?.branch) {
@@ -1133,32 +1127,31 @@ router.patch('/resources/:id/delete', authenticate, requireRole('faculty', 'admi
     const reason = req.body.reason || 'Admin Deleted';
     const deletedAt = new Date().toISOString();
 
+    let query = {};
     if (targetResource.uploadGroupId) {
-      // Group delete
-      resources.forEach(r => {
-        if (r.uploadGroupId === targetResource.uploadGroupId) {
-          r.isDeleted = true;
-          r.deletedReason = reason;
-          r.deletedAt = deletedAt;
-        }
-      });
+      query = { uploadGroupId: targetResource.uploadGroupId };
     } else {
-      // Group delete fallback using title, fileUrl, uploadedBy, and created date signature
-      const targetDateStr = new Date(targetResource.createdAt).toDateString();
-      resources.forEach(r => {
-        const rDateStr = new Date(r.createdAt).toDateString();
-        if (r.title === targetResource.title &&
-            r.fileUrl === targetResource.fileUrl &&
-            r.uploadedBy === targetResource.uploadedBy &&
-            rDateStr === targetDateStr) {
-          r.isDeleted = true;
-          r.deletedReason = reason;
-          r.deletedAt = deletedAt;
-        }
-      });
+      const startOfDay = new Date(targetResource.createdAt);
+      startOfDay.setHours(0,0,0,0);
+      const endOfDay = new Date(targetResource.createdAt);
+      endOfDay.setHours(23,59,59,999);
+
+      query = {
+        title: targetResource.title,
+        fileUrl: targetResource.fileUrl,
+        uploadedBy: targetResource.uploadedBy,
+        createdAt: { $gte: startOfDay.toISOString(), $lte: endOfDay.toISOString() }
+      };
     }
 
-    writeData('resources.json', resources);
+    await Resource.updateMany(query, {
+      $set: {
+        isDeleted: true,
+        deletedReason: reason,
+        deletedAt: deletedAt
+      }
+    });
+
     res.json(targetResource);
   } catch (err) {
     console.error('Soft delete error:', err);
@@ -1167,14 +1160,11 @@ router.patch('/resources/:id/delete', authenticate, requireRole('faculty', 'admi
 });
 
 // PATCH /api/resources/:id — Edit resource details
-router.patch('/resources/:id', authenticate, requireRole('faculty', 'admin'), (req, res) => {
+router.patch('/resources/:id', authenticate, requireRole('faculty', 'admin'), async (req, res) => {
   try {
     const { title, type, subjectId, targetBranch, targetYear, targetSemester, targetSection } = req.body;
-    const resources = readData('resources.json');
-    const index = resources.findIndex(r => r.id === req.params.id);
-    if (index === -1) return res.status(404).json({ error: 'Resource not found' });
-
-    const r = resources[index];
+    const r = await Resource.findOne({ id: req.params.id }).lean();
+    if (!r) return res.status(404).json({ error: 'Resource not found' });
 
     // Enforce HOD (admin_faculty) branch boundaries
     if (req.user.role === 'admin_faculty' && r.targetBranch !== req.user.profile?.branch) {
@@ -1213,16 +1203,22 @@ router.patch('/resources/:id', authenticate, requireRole('faculty', 'admin'), (r
       }
     }
 
-    if (title) r.title = title;
-    if (type) r.type = type;
-    if (subjectId !== undefined) r.subjectId = subjectId;
-    if (targetBranch) r.targetBranch = targetBranch;
-    if (targetYear) r.targetYear = Number(targetYear);
-    if (targetSemester) r.targetSemester = Number(targetSemester);
-    if (targetSection) r.targetSection = targetSection;
+    const updates = {};
+    if (title) updates.title = title;
+    if (type) updates.type = type;
+    if (subjectId !== undefined) updates.subjectId = subjectId;
+    if (targetBranch) updates.targetBranch = targetBranch;
+    if (targetYear) updates.targetYear = Number(targetYear);
+    if (targetSemester) updates.targetSemester = Number(targetSemester);
+    if (targetSection) updates.targetSection = targetSection;
 
-    writeData('resources.json', resources);
-    res.json(r);
+    const updated = await Resource.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: updates },
+      { new: true }
+    ).lean();
+
+    res.json(updated);
   } catch (err) {
     console.error('Edit error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -1230,22 +1226,23 @@ router.patch('/resources/:id', authenticate, requireRole('faculty', 'admin'), (r
 });
 
 // PATCH /api/resources/:id/restore — Restore soft-deleted
-router.patch('/resources/:id/restore', authenticate, requireRole('admin'), (req, res) => {
+router.patch('/resources/:id/restore', authenticate, requireRole('admin'), async (req, res) => {
   try {
-    const resources = readData('resources.json');
-    const index = resources.findIndex(r => r.id === req.params.id);
-    if (index === -1) return res.status(404).json({ error: 'Resource not found' });
+    const resource = await Resource.findOne({ id: req.params.id }).lean();
+    if (!resource) return res.status(404).json({ error: 'Resource not found' });
 
     // Enforce HOD (admin_faculty) branch boundaries
-    if (req.user.role === 'admin_faculty' && resources[index].targetBranch !== req.user.profile?.branch) {
+    if (req.user.role === 'admin_faculty' && resource.targetBranch !== req.user.profile?.branch) {
       return res.status(403).json({ error: 'Not authorized to restore resources outside your department branch' });
     }
 
-    resources[index].isDeleted = false;
-    resources[index].deletedReason = null;
-    resources[index].deletedAt = null;
-    writeData('resources.json', resources);
-    res.json(resources[index]);
+    const updated = await Resource.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: { isDeleted: false, deletedReason: null, deletedAt: null } },
+      { new: true }
+    ).lean();
+
+    res.json(updated);
   } catch (err) {
     console.error('Restore error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -1253,10 +1250,9 @@ router.patch('/resources/:id/restore', authenticate, requireRole('admin'), (req,
 });
 
 // DELETE /api/resources/:id/permanent — Permanent delete
-router.delete('/resources/:id/permanent', authenticate, requireRole('admin'), (req, res) => {
+router.delete('/resources/:id/permanent', authenticate, requireRole('admin'), async (req, res) => {
   try {
-    let resources = readData('resources.json');
-    const targetResource = resources.find(r => r.id === req.params.id);
+    const targetResource = await Resource.findOne({ id: req.params.id }).lean();
     if (!targetResource) return res.status(404).json({ error: 'Resource not found' });
 
     // Enforce HOD (admin_faculty) branch boundaries
@@ -1264,8 +1260,7 @@ router.delete('/resources/:id/permanent', authenticate, requireRole('admin'), (r
       return res.status(403).json({ error: 'Not authorized to permanently delete resources outside your department branch' });
     }
 
-    resources = resources.filter(r => r.id !== req.params.id);
-    writeData('resources.json', resources);
+    await Resource.deleteOne({ id: req.params.id });
     res.json({ success: true });
   } catch (err) {
     console.error('Permanent delete error:', err);
@@ -1274,22 +1269,21 @@ router.delete('/resources/:id/permanent', authenticate, requireRole('admin'), (r
 });
 
 // DELETE /api/resources/empty-recycle-bin - Empty recycle bin safely
-router.delete('/resources/empty-recycle-bin', authenticate, requireRole('admin', 'faculty'), (req, res) => {
+router.delete('/resources/empty-recycle-bin', authenticate, requireRole('admin', 'faculty'), async (req, res) => {
   try {
-    let resources = readData('resources.json');
-    const initialLength = resources.length;
+    let query = { isDeleted: true };
 
     if (req.user.role === 'admin_faculty' && req.user.profile?.branch) {
-      resources = resources.filter(r => !(r.isDeleted && r.targetBranch === req.user.profile.branch));
+      query.targetBranch = req.user.profile.branch;
     } else if (req.user.role === 'admin' || req.user.role === 'main_admin') {
-      resources = resources.filter(r => !r.isDeleted);
+      // no additional filter
     } else {
       // faculty
-      resources = resources.filter(r => !(r.isDeleted && r.uploadedBy === req.user.id));
+      query.uploadedBy = req.user.id;
     }
 
-    writeData('resources.json', resources);
-    res.json({ success: true, deletedCount: initialLength - resources.length });
+    const result = await Resource.deleteMany(query);
+    res.json({ success: true, deletedCount: result.deletedCount });
   } catch (err) {
     console.error('Empty recycle bin error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -1297,18 +1291,18 @@ router.delete('/resources/empty-recycle-bin', authenticate, requireRole('admin',
 });
 
 // GET /api/resources/recycle-bin - Get soft-deleted resources
-router.get('/resources/recycle-bin', authenticate, requireRole('admin', 'faculty'), (req, res) => {
+router.get('/resources/recycle-bin', authenticate, requireRole('admin', 'faculty'), async (req, res) => {
   try {
-    const resources = readData('resources.json');
-    let deleted = resources.filter(r => r.isDeleted);
+    const query = { isDeleted: true };
 
     // Enforce HOD (admin_faculty) branch boundaries
     if (req.user.role === 'admin_faculty' && req.user.profile?.branch) {
-      deleted = deleted.filter(r => r.targetBranch === req.user.profile.branch);
+      query.targetBranch = req.user.profile.branch;
     } else if (req.user.role === 'faculty') {
-      deleted = deleted.filter(r => r.uploadedBy === req.user.id);
+      query.uploadedBy = req.user.id;
     }
 
+    const deleted = await Resource.find(query).lean();
     res.json(deleted);
   } catch (err) {
     console.error('Recycle bin error:', err);
@@ -1317,16 +1311,21 @@ router.get('/resources/recycle-bin', authenticate, requireRole('admin', 'faculty
 });
 
 // POST /api/resources/:id/report — Report broken link (Student)
-router.post('/resources/:id/report', authenticate, (req, res) => {
+router.post('/resources/:id/report', authenticate, async (req, res) => {
   try {
-    const resources = readData('resources.json');
-    const index = resources.findIndex(r => r.id === req.params.id);
-    if (index === -1) return res.status(404).json({ error: 'Resource not found' });
+    const updated = await Resource.findOneAndUpdate(
+      { id: req.params.id },
+      {
+        $set: {
+          isDeleted: true,
+          deletedReason: `Flagged by ${req.user.username || 'Student'}`,
+          deletedAt: new Date().toISOString()
+        }
+      },
+      { new: true }
+    ).lean();
 
-    resources[index].isDeleted = true;
-    resources[index].deletedReason = `Flagged by ${req.user.username || 'Student'}`;
-    resources[index].deletedAt = new Date().toISOString();
-    writeData('resources.json', resources);
+    if (!updated) return res.status(404).json({ error: 'Resource not found' });
     res.json({ success: true, message: 'Resource flagged for admin review' });
   } catch (err) {
     console.error('Report error:', err);
@@ -1337,27 +1336,24 @@ router.post('/resources/:id/report', authenticate, (req, res) => {
 // ============================================================
 // SEARCH
 // ============================================================
-router.get('/search', authenticate, (req, res) => {
+router.get('/search', authenticate, async (req, res) => {
   try {
     const { q } = req.query;
     if (!q) return res.json([]);
 
-    let resources = readData('resources.json');
-    resources = resources.filter(r => !r.isDeleted);
+    const query = { isDeleted: false };
 
     // Scope to user's profile if student
     if (req.user.role === 'student' && req.user.profile) {
       const p = req.user.profile;
-      resources = resources.filter(r =>
-        r.targetBranch === p.branch &&
-        r.targetYear === p.year &&
-        r.targetSemester === p.semester &&
-        (r.targetSection === p.section || r.targetSection === 'ALL')
-      );
+      query.targetBranch = p.branch;
+      query.targetYear = p.year;
+      query.targetSemester = p.semester;
+      query.targetSection = { $in: [p.section, 'ALL'] };
     }
 
-    // Return all resources + taxonomy for client-side Fuse.js
-    const taxonomy = readData('departments.json');
+    const resources = await Resource.find(query).lean();
+    const taxonomy = await Department.findOne({}).lean() || { branches: [] };
     res.json({ resources, branches: taxonomy.branches || [] });
   } catch (err) {
     console.error('Search error:', err);
@@ -1365,60 +1361,73 @@ router.get('/search', authenticate, (req, res) => {
   }
 });
 
-// ============================================================
 // ADMIN — USER MANAGEMENT
 // ============================================================
 
 // GET /api/admin/users — List all users
-router.get('/admin/users', authenticate, requireRole('admin', 'faculty'), (req, res) => {
-  const config = readAdminConfig();
-  let users = readData('users.json');
-  
-  if (req.user.role === 'faculty') {
-    users = users.filter(u => u.role === 'student' || u.role === 'cr');
-  }
+router.get('/admin/users', authenticate, requireRole('admin', 'faculty'), async (req, res) => {
+  try {
+    const config = await readAdminConfig();
+    let query = {};
+    
+    if (req.user.role === 'faculty') {
+      query.role = { $in: ['student', 'cr'] };
+    }
 
-  if (req.user.role === 'admin_faculty' && req.user.profile?.branch) {
-    const HODBranch = req.user.profile.branch;
-    users = users.filter(u => {
-      if (u.role === 'admin') return false;
-      const userBranch = u.profile?.branch;
-      const userAssignments = u.profile?.assignments || [];
-      return userBranch === HODBranch || userAssignments.some(a => a.branch === HODBranch);
-    });
-  }
+    if (req.user.role === 'admin_faculty' && req.user.profile?.branch) {
+      const HODBranch = req.user.profile.branch;
+      query.$and = [
+        { role: { $ne: 'admin' } },
+        {
+          $or: [
+            { 'profile.branch': HODBranch },
+            { 'profile.assignments.branch': HODBranch }
+          ]
+        }
+      ];
+    }
 
-  const safeUsers = users.map(({ passwordHash, ...rest }) => ({
-    ...rest,
-    isMainAdmin: config.setupComplete && rest.id === config.adminUserId
-  }));
-  res.json(safeUsers);
+    const users = await User.find(query).lean();
+    const safeUsers = users.map(({ passwordHash, ...rest }) => ({
+      ...rest,
+      isMainAdmin: config.setupComplete && rest.id === config.adminUserId
+    }));
+    res.json(safeUsers);
+  } catch (err) {
+    console.error('List users error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // PATCH /api/admin/users/:id/role — Change user role
-router.patch('/admin/users/:id/role', authenticate, requireRole('admin'), (req, res) => {
+router.patch('/admin/users/:id/role', authenticate, requireRole('admin'), async (req, res) => {
   try {
     const { role } = req.body;
     if (!['student', 'faculty', 'admin', 'admin_faculty', 'cr'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
 
-    const users = readData('users.json');
-    const userIndex = users.findIndex(u => u.id === req.params.id);
-    if (userIndex === -1) return res.status(404).json({ error: 'User not found' });
-
-    users[userIndex].role = role;
-    // Facultys and admins don't need student onboarding
+    const update = { role };
+    // Faculty and admins don't need student onboarding
     if (role !== 'student') {
-      users[userIndex].onboardingComplete = true;
+      update.onboardingComplete = true;
     }
-    // Remove HOD authority if converted back to normal faculty
-    if (role === 'faculty' && users[userIndex].profile?.branch) {
-      delete users[userIndex].profile.branch;
-    }
-    writeData('users.json', users);
 
-    const { passwordHash: _, ...safeUser } = users[userIndex];
+    const updateQuery = { $set: update };
+    // Remove HOD authority if converted back to normal faculty
+    if (role === 'faculty') {
+      updateQuery.$unset = { 'profile.branch': 1 };
+    }
+
+    const updatedUser = await User.findOneAndUpdate(
+      { id: req.params.id },
+      updateQuery,
+      { new: true }
+    ).lean();
+
+    if (!updatedUser) return res.status(404).json({ error: 'User not found' });
+
+    const { passwordHash: _, ...safeUser } = updatedUser;
     res.json({ user: safeUser });
   } catch (err) {
     console.error('Change role error:', err);
@@ -1427,19 +1436,18 @@ router.patch('/admin/users/:id/role', authenticate, requireRole('admin'), (req, 
 });
 
 // PATCH /api/admin/users/:id/branch — Assign branch to faculty
-router.patch('/admin/users/:id/branch', authenticate, requireRole('admin'), (req, res) => {
+router.patch('/admin/users/:id/branch', authenticate, requireRole('admin'), async (req, res) => {
   try {
     const { branch } = req.body;
-    const users = readData('users.json');
-    const userIndex = users.findIndex(u => u.id === req.params.id);
-    if (userIndex === -1) return res.status(404).json({ error: 'User not found' });
+    const updatedUser = await User.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: { 'profile.branch': branch, 'profile.assignments': [] } },
+      { new: true }
+    ).lean();
 
-    if (!users[userIndex].profile) users[userIndex].profile = {};
-    users[userIndex].profile.branch = branch;
-    users[userIndex].profile.assignments = [];
+    if (!updatedUser) return res.status(404).json({ error: 'User not found' });
 
-    writeData('users.json', users);
-    const { passwordHash: _, ...safeUser } = users[userIndex];
+    const { passwordHash: _, ...safeUser } = updatedUser;
     res.json({ user: safeUser });
   } catch (err) {
     console.error('Change branch error:', err);
@@ -1448,18 +1456,15 @@ router.patch('/admin/users/:id/branch', authenticate, requireRole('admin'), (req
 });
 
 // PATCH /api/admin/users/:id/assignments - Assign multiple mappings to faculty
-router.patch('/admin/users/:id/assignments', authenticate, requireRole('admin'), (req, res) => {
+router.patch('/admin/users/:id/assignments', authenticate, requireRole('admin'), async (req, res) => {
   try {
     const { assignments } = req.body;
     if (!Array.isArray(assignments)) {
       return res.status(400).json({ error: 'assignments must be an array' });
     }
 
-    const users = readData('users.json');
-    const userIndex = users.findIndex(u => u.id === req.params.id);
-    if (userIndex === -1) return res.status(404).json({ error: 'User not found' });
-
-    const targetUser = users[userIndex];
+    const targetUser = await User.findOne({ id: req.params.id }).lean();
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
 
     // Enforce HOD (admin_faculty) branch boundaries on assignments
     if (req.user.role === 'admin_faculty') {
@@ -1482,12 +1487,13 @@ router.patch('/admin/users/:id/assignments', authenticate, requireRole('admin'),
       }
     }
 
-    if (!targetUser.profile) targetUser.profile = {};
-    targetUser.profile.assignments = assignments;
-    // We intentionally DO NOT update profile.branch here to avoid erroneously giving HOD privileges to normal faculty
-  
-    writeData('users.json', users);
-    const { passwordHash: _, ...safeUser } = users[userIndex];
+    const updatedUser = await User.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: { 'profile.assignments': assignments } },
+      { new: true }
+    ).lean();
+
+    const { passwordHash: _, ...safeUser } = updatedUser;
     res.json({ user: safeUser });
   } catch (err) {
     console.error('Update assignments error:', err);
@@ -1496,18 +1502,16 @@ router.patch('/admin/users/:id/assignments', authenticate, requireRole('admin'),
 });
 
 // PATCH /api/admin/users/:id/student-profile - Edit student onboarding details (branch, year, semester, section)
-router.patch('/admin/users/:id/student-profile', authenticate, requireRole('admin'), (req, res) => {
+router.patch('/admin/users/:id/student-profile', authenticate, requireRole('admin'), async (req, res) => {
   try {
     const { branch, year, semester, section, rollNo } = req.body;
     if (!branch || !year || !semester || !section) {
       return res.status(400).json({ error: 'All profile fields are required' });
     }
 
-    const users = readData('users.json');
-    const userIndex = users.findIndex(u => u.id === req.params.id);
-    if (userIndex === -1) return res.status(404).json({ error: 'User not found' });
+    const targetUser = await User.findOne({ id: req.params.id }).lean();
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
 
-    const targetUser = users[userIndex];
     if (targetUser.role !== 'student' && targetUser.role !== 'cr') {
       return res.status(400).json({ error: 'This action is only allowed for student profiles' });
     }
@@ -1522,17 +1526,24 @@ router.patch('/admin/users/:id/student-profile', authenticate, requireRole('admi
       }
     }
 
-    targetUser.profile = {
-      branch,
-      year: Number(year),
-      semester: Number(semester),
-      section,
-      rollNo: rollNo !== undefined ? rollNo : (targetUser.profile?.rollNo || '')
-    };
-    targetUser.onboardingComplete = true;
+    const updatedUser = await User.findOneAndUpdate(
+      { id: req.params.id },
+      {
+        $set: {
+          profile: {
+            branch,
+            year: Number(year),
+            semester: Number(semester),
+            section,
+            rollNo: rollNo !== undefined ? rollNo : (targetUser.profile?.rollNo || '')
+          },
+          onboardingComplete: true
+        }
+      },
+      { new: true }
+    ).lean();
 
-    writeData('users.json', users);
-    const { passwordHash: _, ...safeUser } = targetUser;
+    const { passwordHash: _, ...safeUser } = updatedUser;
     res.json({ user: safeUser });
   } catch (err) {
     console.error('Update student profile error:', err);
@@ -1541,7 +1552,7 @@ router.patch('/admin/users/:id/student-profile', authenticate, requireRole('admi
 });
 
 // DELETE /api/admin/users/:id - Delete a user (Admin/Faculty)
-router.delete('/admin/users/:id', authenticate, requireRole('admin', 'faculty'), (req, res) => {
+router.delete('/admin/users/:id', authenticate, requireRole('admin', 'faculty'), async (req, res) => {
   try {
     const targetId = req.params.id;
 
@@ -1550,8 +1561,7 @@ router.delete('/admin/users/:id', authenticate, requireRole('admin', 'faculty'),
       return res.status(400).json({ error: 'You cannot delete your own account' });
     }
 
-    const users = readData('users.json');
-    const targetUser = users.find(u => u.id === targetId);
+    const targetUser = await User.findOne({ id: targetId }).lean();
     if (!targetUser) return res.status(404).json({ error: 'User not found' });
 
     // If Faculty is trying to delete, ensure they only delete students
@@ -1575,21 +1585,19 @@ router.delete('/admin/users/:id', authenticate, requireRole('admin', 'faculty'),
 
     // If deleting an admin, ensure safety guards
     if (targetUser.role === 'admin') {
-      const adminCount = users.filter(u => u.role === 'admin').length;
+      const adminCount = await User.countDocuments({ role: 'admin' });
       if (adminCount <= 1) {
         return res.status(400).json({ error: 'Cannot delete the last admin account' });
       }
 
       // Protect Main Admin (defined in admin_config.json)
-      const config = readAdminConfig(); // Helper we added earlier
+      const config = await readAdminConfig();
       if (config.setupComplete && targetId === config.adminUserId) {
         return res.status(400).json({ error: 'Cannot delete the Main Admin account from here. Use Recovery Key reset if needed.' });
       }
     }
 
-    const updated = users.filter(u => u.id !== targetId);
-    writeData('users.json', updated);
-
+    await User.deleteOne({ id: targetId });
     res.json({ success: true, message: 'User deleted' });
   } catch (err) {
     console.error('Delete user error:', err);
@@ -1598,30 +1606,32 @@ router.delete('/admin/users/:id', authenticate, requireRole('admin', 'faculty'),
 });
 
 // GET /api/admin/stats — Dashboard statistics
-router.get('/admin/stats', authenticate, requireRole('admin'), (req, res) => {
+router.get('/api/admin/stats', authenticate, requireRole('admin'), async (req, res) => {
   try {
-    const users = readData('users.json');
-    const resources = readData('resources.json');
-    const taxonomy = readData('departments.json');
-
     // Determine if the user is branch-restricted (admin_faculty)
     const isAdminFaculty = req.user.role === 'admin_faculty';
     const userBranch = req.user.profile?.branch || null;
 
-    let activeResources = resources.filter(r => !r.isDeleted);
-    let deletedResources = resources.filter(r => r.isDeleted);
-    let filteredUsers = users;
+    let activeResourcesQuery = { isDeleted: false };
+    let deletedResourcesQuery = { isDeleted: true };
+    let usersQuery = {};
 
     // Branch-scope filtering for admin_faculty
     if (isAdminFaculty && userBranch) {
-      activeResources = activeResources.filter(r => r.targetBranch === userBranch);
-      deletedResources = deletedResources.filter(r => r.targetBranch === userBranch);
-      filteredUsers = users.filter(u => {
-        if (u.role === 'student' || u.role === 'cr') return u.profile?.branch === userBranch;
-        if (u.role === 'faculty' || u.role === 'admin_faculty') return u.profile?.branch === userBranch;
-        return false; // hide main admins from admin_faculty view
-      });
+      activeResourcesQuery.targetBranch = userBranch;
+      deletedResourcesQuery.targetBranch = userBranch;
+      usersQuery = {
+        $and: [
+          { role: { $in: ['student', 'cr', 'faculty', 'admin_faculty'] } },
+          { 'profile.branch': userBranch }
+        ]
+      };
     }
+
+    const filteredUsers = await User.find(usersQuery).lean();
+    const activeResources = await Resource.find(activeResourcesQuery).lean();
+    const deletedCount = await Resource.countDocuments(deletedResourcesQuery);
+    const taxonomy = await Department.findOne({}).lean() || { branches: [] };
 
     const branchNames = {};
     (taxonomy.branches || []).forEach(b => { branchNames[b.id] = b.shortName || b.name; });
@@ -1653,7 +1663,7 @@ router.get('/admin/stats', authenticate, requireRole('admin'), (req, res) => {
       facultys: filteredUsers.filter(u => u.role === 'faculty' || u.role === 'admin_faculty').length,
       admins: filteredUsers.filter(u => u.role === 'admin').length,
       totalResources: activeResources.length,
-      deletedResources: deletedResources.length,
+      deletedResources: deletedCount,
       totalBranches: isAdminFaculty ? 1 : (taxonomy.branches || []).length,
       recentResources: activeResources.slice(-5).reverse(),
       chartData
@@ -1667,17 +1677,14 @@ router.get('/admin/stats', authenticate, requireRole('admin'), (req, res) => {
 // ============================================================
 // PUSH NOTIFICATION SUBSCRIPTION
 // ============================================================
-router.post('/subscribe', authenticate, (req, res) => {
+router.post('/subscribe', authenticate, async (req, res) => {
   try {
-    const subscriptions = readData('subscriptions.json');
-    const subscription = {
+    await Subscription.create({
       ...req.body,
       userId: req.user.id,
       userProfile: req.user.profile,
       createdAt: new Date().toISOString()
-    };
-    subscriptions.push(subscription);
-    writeData('subscriptions.json', subscriptions);
+    });
     res.status(201).json({ success: true });
   } catch (err) {
     console.error('Subscribe error:', err);
@@ -1686,15 +1693,13 @@ router.post('/subscribe', authenticate, (req, res) => {
 });
 
 // GET /api/student/faculty - Get all faculty members that teach the current student
-router.get('/student/faculty', authenticate, requireRole('student', 'cr'), (req, res) => {
+router.get('/student/faculty', authenticate, requireRole('student', 'cr'), async (req, res) => {
   try {
-    const users = readData('users.json');
-    const resources = readData('resources.json');
-    const taxonomy = readData('departments.json');
     const studentProfile = req.user.profile || {};
     
     // Create a subject map for quick lookup
     const subjectMap = {};
+    const taxonomy = await Department.findOne({}).lean() || { branches: [] };
     const branches = Array.isArray(taxonomy) ? taxonomy : (taxonomy.branches || []);
     branches.forEach(branch => {
       branch.years?.forEach(year => {
@@ -1707,8 +1712,17 @@ router.get('/student/faculty', authenticate, requireRole('student', 'cr'), (req,
     });
     
     // Filter users who are faculty or admin_faculty
-    const faculties = users.filter(u => u.role === 'faculty' || u.role === 'admin_faculty');
+    const faculties = await User.find({ role: { $in: ['faculty', 'admin_faculty'] } }).lean();
     
+    // Query resources matching this student
+    const resources = await Resource.find({
+      isDeleted: false,
+      targetBranch: studentProfile.branch,
+      targetYear: studentProfile.year,
+      targetSemester: studentProfile.semester,
+      targetSection: { $in: [studentProfile.section, 'ALL'] }
+    }).lean();
+
     // Find those who teach this student OR have uploaded a resource for this student
     const myFaculties = faculties.filter(f => {
       const assignments = f.profile?.assignments || [];
@@ -1723,20 +1737,12 @@ router.get('/student/faculty', authenticate, requireRole('student', 'cr'), (req,
           (a.section === 'ALL' || a.section === studentProfile.section)
         );
       } else if (f.profile?.branch === studentProfile.branch) {
-        // Legacy check for backward compatibility
         isAssigned = true;
       }
       
       // If not assigned explicitly, check if they uploaded ANY resource targeting this student
       if (!isAssigned) {
-        isAssigned = resources.some(r => 
-          r.uploadedBy === f.id &&
-          !r.isDeleted &&
-          r.targetBranch === studentProfile.branch &&
-          r.targetYear === studentProfile.year &&
-          r.targetSemester === studentProfile.semester &&
-          (r.targetSection === 'ALL' || r.targetSection === studentProfile.section)
-        );
+        isAssigned = resources.some(r => r.uploadedBy === f.id);
       }
       
       return isAssigned;
@@ -1745,14 +1751,8 @@ router.get('/student/faculty', authenticate, requireRole('student', 'cr'), (req,
     // Return safe data and recent post
     const safeFaculties = myFaculties.map(f => {
       // Find resources uploaded by this faculty for this student
-      const fResources = resources.filter(r => 
-        r.uploadedBy === f.id &&
-        !r.isDeleted &&
-        r.targetBranch === studentProfile.branch &&
-        r.targetYear === studentProfile.year &&
-        r.targetSemester === studentProfile.semester &&
-        (r.targetSection === 'ALL' || r.targetSection === studentProfile.section)
-      ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const fResources = resources.filter(r => r.uploadedBy === f.id)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       const recentResource = fResources.length > 0 ? fResources[0] : null;
 

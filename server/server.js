@@ -7,25 +7,20 @@ dotenv.config();
 
 const path = require('path');
 const fs = require('fs');
+const { connectDB } = require('./utils/db');
 const apiRoutes = require('./routes/api');
 
 const app = express();
 
-// Ensure uploads directory exists
+// Ensure uploads directory exists (local dev only)
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Ensure data directory exists
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
 // Middleware
 app.use(helmet({
-  contentSecurityPolicy: false, // Disabled for simple PWA and React local dev without extensive CSP rules
+  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false
 }));
 app.use(compression());
@@ -58,13 +53,20 @@ if (process.env.NODE_ENV === 'production') {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`\n  Smart Sync Server running on port ${PORT}`);
-  console.log(`  Health: http://localhost:${PORT}/health`);
-  console.log(`  API:    http://localhost:${PORT}/api`);
-  if (process.env.NODE_ENV === 'production') {
-    console.log(`  Client: http://localhost:${PORT}/\n`);
-  } else {
-    console.log('');
-  }
+// Connect to MongoDB then start server
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`\n  Smart Sync Server running on port ${PORT}`);
+    console.log(`  Health: http://localhost:${PORT}/health`);
+    console.log(`  API:    http://localhost:${PORT}/api`);
+    if (process.env.NODE_ENV === 'production') {
+      console.log(`  Client: http://localhost:${PORT}/\n`);
+    } else {
+      console.log('');
+    }
+  });
+}).catch(err => {
+  console.error('Failed to connect to MongoDB:', err.message);
+  console.error('Make sure MongoDB is running and MONGO_URI is set in server/.env');
+  process.exit(1);
 });

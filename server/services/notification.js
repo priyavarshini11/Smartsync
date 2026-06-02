@@ -5,6 +5,8 @@ try {
   console.log('web-push not available, notifications disabled');
 }
 
+const { Subscription } = require('../models');
+
 // Configure Web Push with VAPID keys (graceful fallback)
 const publicVapidKey = process.env.PUBLIC_VAPID_KEY;
 const privateVapidKey = process.env.PRIVATE_VAPID_KEY;
@@ -33,26 +35,24 @@ const sendTargetedNotification = async (payload, targets = {}) => {
   }
 
   try {
-    const { readData, writeData } = require('../utils/db');
-    const subscriptions = readData('subscriptions.json');
-    
-    // Filter subscriptions based on targets
-    const filteredSubscriptions = subscriptions.filter(sub => {
-      // If no targets specified, send to everyone
-      if (!targets.branch && !targets.year && !targets.semester && !targets.section) return true;
+    // Build query based on targets
+    const query = {};
+    if (targets.branch || targets.year || targets.semester || targets.section) {
+      const matchCriteria = [];
+      if (targets.branch) matchCriteria.push({ 'userProfile.branch': targets.branch });
+      if (targets.year) matchCriteria.push({ 'userProfile.year': Number(targets.year) });
+      if (targets.semester) matchCriteria.push({ 'userProfile.semester': Number(targets.semester) });
+      if (targets.section && targets.section !== 'ALL') {
+        matchCriteria.push({ 'userProfile.section': { $in: [targets.section, 'ALL'] } });
+      }
+      
+      query.$or = [
+        { userProfile: null },
+        matchCriteria.length > 0 ? { $and: matchCriteria } : {}
+      ];
+    }
 
-      // Admins and facultys always get notifications if they subscribed
-      if (sub.userProfile === null) return true;
-
-      const p = sub.userProfile;
-      // Filter logic matches the resource visibility logic
-      const branchMatch = !targets.branch || targets.branch === p.branch;
-      const yearMatch = !targets.year || targets.year === p.year;
-      const semesterMatch = !targets.semester || targets.semester === p.semester;
-      const sectionMatch = !targets.section || targets.section === 'ALL' || targets.section === p.section;
-
-      return branchMatch && yearMatch && semesterMatch && sectionMatch;
-    });
+    const filteredSubscriptions = await Subscription.find(query).lean();
 
     if (filteredSubscriptions.length === 0) {
       console.log('No matching subscribers for this notification');
@@ -78,10 +78,8 @@ const sendTargetedNotification = async (payload, targets = {}) => {
     // Clean up invalid subscriptions
     const invalidSubs = results.filter(r => r && r.invalid);
     if (invalidSubs.length > 0) {
-      const validSubs = subscriptions.filter(
-        sub => !invalidSubs.find(inv => inv.endpoint === sub.endpoint)
-      );
-      writeData('subscriptions.json', validSubs);
+      const endpoints = invalidSubs.map(inv => inv.endpoint);
+      await Subscription.deleteMany({ endpoint: { $in: endpoints } });
     }
 
     console.log(`Notifications sent to ${filteredSubscriptions.length - invalidSubs.length} subscribers`);

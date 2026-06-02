@@ -1,12 +1,12 @@
 const jwt = require('jsonwebtoken');
-const { readData } = require('../utils/db');
+const { User } = require('../models');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'smart-campus-secret-key-change-in-production';
 
 /**
  * Verify JWT token and attach user to request.
  */
-function authenticate(req, res, next) {
+async function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'No token provided' });
@@ -15,8 +15,7 @@ function authenticate(req, res, next) {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const users = readData('users.json');
-    const user = users.find(u => u.id === decoded.userId);
+    const user = await User.findOne({ id: decoded.userId }).lean();
     if (!user) {
       return res.status(401).json({ error: 'User not found' });
     }

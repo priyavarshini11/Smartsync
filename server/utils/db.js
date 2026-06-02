@@ -1,44 +1,112 @@
-const fs = require('fs');
-const path = require('path');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
+const { User, Resource, Department, AdminConfig, Subscription } = require('../models');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
-
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// --- Cached MongoDB connection for serverless environments ---
+let cached = global._mongooseCache;
+if (!cached) {
+  cached = global._mongooseCache = { conn: null, promise: null };
 }
 
-/**
- * Read JSON data from a file in the data directory.
- * Returns parsed data or an empty array/object fallback.
- */
-function readData(filename) {
-  const filepath = path.join(DATA_DIR, filename);
-  try {
-    if (!fs.existsSync(filepath)) return [];
-    const raw = fs.readFileSync(filepath, 'utf8');
-    return JSON.parse(raw);
-  } catch (err) {
-    console.error(`Error reading ${filename}:`, err.message);
-    return [];
+async function connectDB() {
+  if (cached.conn && mongoose.connection.readyState === 1) {
+    return cached.conn;
   }
+
+  if (!cached.promise) {
+    const uri = process.env.MONGO_URI;
+    if (!uri) throw new Error('MONGO_URI environment variable is not set');
+
+    cached.promise = mongoose.connect(uri, {
+      bufferCommands: false,
+    }).then(m => {
+      console.log('MongoDB Connected:', m.connection.host);
+      return m;
+    }).catch(err => {
+      cached.promise = null;
+      throw err;
+    });
+  }
+
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
+
+// --- Collection mapping ---
+const modelMap = {
+  users: User,
+  resources: Resource,
+  departments: Department,
+  admin_config: AdminConfig,
+  subscriptions: Subscription,
+};
+
+const singleDocCollections = new Set(['departments', 'admin_config']);
+
+function collName(filename) {
+  return filename.replace('.json', '');
+}
+
+function stripMongoFields(doc) {
+  if (!doc) return doc;
+  const obj = { ...doc };
+  delete obj._id;
+  delete obj.__v;
+  return obj;
 }
 
 /**
- * Write JSON data to a file in the data directory (atomic).
+ * Read data from MongoDB collection (drop-in replacement for JSON file reads).
+ * Returns array for multi-doc collections, object for single-doc collections.
  */
-function writeData(filename, data) {
-  const filepath = path.join(DATA_DIR, filename);
-  const tmpPath = filepath + '.tmp';
-  try {
-    fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf8');
-    fs.renameSync(tmpPath, filepath);
-  } catch (err) {
-    console.error(`Error writing ${filename}:`, err.message);
-    // Clean up temp file if rename failed
-    if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
-    throw err;
+async function readData(filename) {
+  await connectDB();
+  const name = collName(filename);
+  const Model = modelMap[name];
+  if (!Model) throw new Error(`Unknown collection: ${name}`);
+
+  if (singleDocCollections.has(name)) {
+    const doc = await Model.findOne({}).lean();
+    if (!doc) {
+      if (name === 'departments') return { branches: [] };
+      return []; // matches old behavior for missing files
+    }
+    return stripMongoFields(doc);
+  }
+
+  const docs = await Model.find({}).lean();
+  return docs.map(stripMongoFields);
+}
+
+/**
+ * Write data to MongoDB collection (drop-in replacement for JSON file writes).
+ * Replaces entire collection content.
+ */
+async function writeData(filename, data) {
+  await connectDB();
+  const name = collName(filename);
+  const Model = modelMap[name];
+  if (!Model) throw new Error(`Unknown collection: ${name}`);
+
+  if (singleDocCollections.has(name)) {
+    await Model.deleteMany({});
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      const cleanData = { ...data };
+      delete cleanData._id;
+      await Model.create(cleanData);
+    }
+    return;
+  }
+
+  // Array collections: replace all documents
+  await Model.deleteMany({});
+  if (Array.isArray(data) && data.length > 0) {
+    const cleanData = data.map(d => {
+      const clean = { ...d };
+      delete clean._id;
+      return clean;
+    });
+    await Model.insertMany(cleanData, { ordered: false });
   }
 }
 
@@ -49,4 +117,4 @@ function generateId() {
   return crypto.randomBytes(12).toString('base64url').slice(0, 16);
 }
 
-module.exports = { readData, writeData, generateId, DATA_DIR };
+module.exports = { readData, writeData, generateId, connectDB };
