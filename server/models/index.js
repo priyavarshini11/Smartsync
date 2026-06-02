@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 
 // --- Flexible schemas (strict: false) to match existing JSON structure ---
 
-const userSchema = new mongoose.Schema({}, {
+const userSchema = new mongoose.Schema({
+  id: { type: String, required: true }
+}, {
   strict: false,
   versionKey: false,
   collection: 'users'
@@ -11,7 +13,9 @@ userSchema.index({ id: 1 }, { unique: true });
 userSchema.index({ email: 1 });
 userSchema.index({ username: 1 });
 
-const resourceSchema = new mongoose.Schema({}, {
+const resourceSchema = new mongoose.Schema({
+  id: { type: String, required: true }
+}, {
   strict: false,
   versionKey: false,
   collection: 'resources'
