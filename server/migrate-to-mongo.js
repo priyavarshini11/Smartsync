@@ -29,9 +29,9 @@ function readJsonFile(filename) {
 }
 
 async function migrate() {
-  const uri = process.env.MONGO_URI;
+  const uri = process.env.MONGO_URI || process.env.MONGO_URL || process.env.mongo_url || process.env.mongo_uri;
   if (!uri) {
-    console.error('ERROR: MONGO_URI environment variable is not set.');
+    console.error('ERROR: MONGO_URI or MONGO_URL environment variable is not set.');
     console.error('Set it to your MongoDB Atlas connection string.');
     process.exit(1);
   }
