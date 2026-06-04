@@ -757,7 +757,8 @@ router.post('/resources/upload', authenticate, requireRole('faculty', 'admin'), 
           });
           fileUrl = blob.url;
         } catch (e) {
-          return res.status(400).json({ error: 'File uploads require BLOB_READ_WRITE_TOKEN. Please provide a link URL instead.' });
+          console.error('Vercel Blob upload failed:', e);
+          return res.status(400).json({ error: `Vercel Blob upload failed: ${e.message}. Please verify BLOB_READ_WRITE_TOKEN is set.` });
         }
       } else {
         // Local dev: file saved to disk by multer
