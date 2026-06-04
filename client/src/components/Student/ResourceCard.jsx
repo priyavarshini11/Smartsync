@@ -106,22 +106,33 @@ const ResourceCard = ({ resource, color, variant = 'default', bgColor, borderCol
 
   const getPreviewType = () => {
     if (resource.textContent) return 'text';
-    const ext = getFileExtension();
+    const url = (resource.fileUrl || '').toLowerCase();
+    const ext = url.split('.').pop()?.split('?')[0]?.split('#')[0] || '';
     const type = (resource.type || '').toLowerCase();
 
-    // Prioritize actual file extensions to ensure correct responsive rendering
+    // Check for Google Drive links
+    const isGoogleDrive = url.includes('drive.google.com') || url.includes('docs.google.com');
+
+    // Image detection
     if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext) || type === 'image') return 'image';
+    // Video detection
     if (['mp4', 'webm', 'ogg', 'mov'].includes(ext) || type === 'video') return 'video';
-    if (['mp3', 'wav', 'ogg', 'aac'].includes(ext) || type === 'audio') return 'audio';
-    
-    // Fallback to pdf if extension is pdf or type is pdf
+    // Audio detection
+    if (['mp3', 'wav', 'ogg', 'aac', 'flac'].includes(ext) || type === 'audio') return 'audio';
+    // PDF detection
     if (ext === 'pdf' || type === 'pdf') return 'pdf';
-    
-    if (type === 'link' || resource.fileUrl?.startsWith('http')) return 'link';
-    
-    // Only use iframe for web-safe formats
+    // Web-safe text formats
     if (['txt', 'csv', 'json', 'html', 'htm', 'md'].includes(ext)) return 'iframe';
-    
+
+    // Google Drive links → use Google Docs Viewer embed
+    if (isGoogleDrive) return 'gdrive';
+
+    // Document types uploaded as links — use Google Docs Viewer
+    if (['assignment', 'notes', 'syllabus', 'timetable', 'case study', 'project'].includes(type) && url.startsWith('http')) return 'docviewer';
+
+    // Generic external links
+    if (type === 'link' || url.startsWith('http')) return 'link';
+
     return 'unsupported';
   };
 
@@ -146,6 +157,25 @@ const ResourceCard = ({ resource, color, variant = 'default', bgColor, borderCol
     return () => window.removeEventListener('keydown', handleEsc);
   }, [showPreview]);
 
+  // Helper: Convert Google Drive share link to embeddable preview URL
+  const getGoogleDriveEmbedUrl = (url) => {
+    // Extract file ID from various Google Drive URL formats
+    const patterns = [
+      /\/file\/d\/([a-zA-Z0-9_-]+)/,
+      /id=([a-zA-Z0-9_-]+)/,
+      /\/d\/([a-zA-Z0-9_-]+)/,
+    ];
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return `https://drive.google.com/file/d/${match[1]}/preview`;
+    }
+    // Google Docs/Sheets/Slides
+    if (url.includes('docs.google.com')) {
+      return url.replace(/\/edit.*$/, '/preview').replace(/\/view.*$/, '/preview');
+    }
+    return url;
+  };
+
   const renderPreviewContent = () => {
     const url = getFileUrl();
     const previewType = getPreviewType();
@@ -161,7 +191,7 @@ const ResourceCard = ({ resource, color, variant = 'default', bgColor, borderCol
       case 'pdf':
         return (
           <iframe
-            src={`${url}#toolbar=1&navpanes=0`}
+            src={`https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`}
             title={resource.title}
             className="preview-frame"
           />
@@ -196,6 +226,25 @@ const ResourceCard = ({ resource, color, variant = 'default', bgColor, borderCol
               Your browser does not support the audio element.
             </audio>
           </div>
+        );
+
+      case 'gdrive':
+        return (
+          <iframe
+            src={getGoogleDriveEmbedUrl(url)}
+            title={resource.title}
+            className="preview-frame"
+            sandbox="allow-scripts allow-same-origin allow-popups"
+          />
+        );
+
+      case 'docviewer':
+        return (
+          <iframe
+            src={`https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`}
+            title={resource.title}
+            className="preview-frame"
+          />
         );
 
       case 'link':

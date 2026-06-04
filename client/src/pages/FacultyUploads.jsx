@@ -183,9 +183,23 @@ const FacultyUploads = () => {
             </div>
             <div className="preview-body">
               {(() => {
-                const url = previewResource.fileUrl;
-                const ext = url.split('.').pop()?.toLowerCase().split('?')[0] || '';
-                const type = previewResource.type?.toLowerCase() || '';
+                const url = previewResource.fileUrl || '';
+                const urlLower = url.toLowerCase();
+                const ext = urlLower.split('.').pop()?.split('?')[0]?.split('#')[0] || '';
+                const type = (previewResource.type || '').toLowerCase();
+                const isGoogleDrive = urlLower.includes('drive.google.com') || urlLower.includes('docs.google.com');
+
+                // Helper: Convert Google Drive share link to embeddable preview URL
+                const getGDriveEmbed = (u) => {
+                  const patterns = [/\/file\/d\/([a-zA-Z0-9_-]+)/, /id=([a-zA-Z0-9_-]+)/, /\/d\/([a-zA-Z0-9_-]+)/];
+                  for (const p of patterns) {
+                    const m = u.match(p);
+                    if (m) return `https://drive.google.com/file/d/${m[1]}/preview`;
+                  }
+                  if (u.includes('docs.google.com')) return u.replace(/\/edit.*$/, '/preview').replace(/\/view.*$/, '/preview');
+                  return u;
+                };
+
                 if (previewResource.textContent) {
                   return (
                     <div style={{ padding: '2rem', whiteSpace: 'pre-wrap', lineHeight: '1.6', fontSize: '1.1rem', color: 'var(--text-primary)', overflowY: 'auto', height: '100%' }}>
@@ -204,8 +218,14 @@ const FacultyUploads = () => {
                       <video controls autoPlay className="preview-video"><source src={url} /></video>
                     </div>
                   );
-                } else if (['pdf'].includes(ext) || type === 'pdf') {
-                  return <iframe src={`${url}#toolbar=1&navpanes=0`} className="preview-frame" title={previewResource.title} />;
+                } else if (ext === 'pdf' || type === 'pdf') {
+                  return <iframe src={`https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`} className="preview-frame" title={previewResource.title} />;
+                } else if (isGoogleDrive) {
+                  return <iframe src={getGDriveEmbed(url)} className="preview-frame" title={previewResource.title} sandbox="allow-scripts allow-same-origin allow-popups" />;
+                } else if (['assignment', 'notes', 'syllabus', 'timetable', 'case study', 'project'].includes(type) && urlLower.startsWith('http')) {
+                  return <iframe src={`https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`} className="preview-frame" title={previewResource.title} />;
+                } else if (type === 'link' || urlLower.startsWith('http')) {
+                  return <iframe src={url} className="preview-frame" title={previewResource.title} sandbox="allow-scripts allow-same-origin allow-popups" />;
                 } else {
                   return (
                     <div className="preview-unsupported">
