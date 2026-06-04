@@ -236,7 +236,7 @@ router.post('/admin/auth/setup', async (req, res) => {
 });
 
 // POST /api/admin/auth/login — Admin login with ID + PIN
-router.post('/api/admin/auth/login', async (req, res) => {
+router.post('/admin/auth/login', async (req, res) => {
   try {
     const { adminId, pin } = req.body;
     if (!adminId || !pin) {
@@ -280,7 +280,7 @@ router.post('/api/admin/auth/login', async (req, res) => {
 });
 
 // POST /api/admin/auth/reset-pin — Reset PIN using recovery key
-router.post('/api/admin/auth/reset-pin', async (req, res) => {
+router.post('/admin/auth/reset-pin', async (req, res) => {
   try {
     const { adminId, recoveryKey } = req.body;
     if (!adminId || !recoveryKey) {
@@ -1606,7 +1606,7 @@ router.delete('/admin/users/:id', authenticate, requireRole('admin', 'faculty'),
 });
 
 // GET /api/admin/stats — Dashboard statistics
-router.get('/api/admin/stats', authenticate, requireRole('admin'), async (req, res) => {
+router.get('/admin/stats', authenticate, requireRole('admin'), async (req, res) => {
   try {
     // Determine if the user is branch-restricted (admin_faculty)
     const isAdminFaculty = req.user.role === 'admin_faculty';
