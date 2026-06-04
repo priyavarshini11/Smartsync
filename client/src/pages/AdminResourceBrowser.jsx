@@ -488,7 +488,8 @@ const AdminResourceBrowser = () => {
                     </div>
                   );
                 } else if (ext === 'pdf' || type === 'pdf') {
-                  return <iframe src={`https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`} className="preview-frame" title={previewResource.title} />;
+                  const isRemote = url.startsWith('http') && !url.includes('localhost') && !url.includes('127.0.0.1');
+                  return <iframe src={isRemote ? `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true` : `${url}#toolbar=1&navpanes=0`} className="preview-frame" title={previewResource.title} />;
                 } else if (isGoogleDrive) {
                   return <iframe src={getGDriveEmbed(url)} className="preview-frame" title={previewResource.title} sandbox="allow-scripts allow-same-origin allow-popups" />;
                 } else if (['assignment', 'notes', 'syllabus', 'timetable', 'case study', 'project'].includes(type) && urlLower.startsWith('http')) {
