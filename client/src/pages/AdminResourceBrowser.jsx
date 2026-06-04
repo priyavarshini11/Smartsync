@@ -453,6 +453,22 @@ const AdminResourceBrowser = () => {
             <div className="preview-body">
               {(() => {
                 const url = previewResource.fileUrl || '';
+                const isLocalFileOnCloud = url.startsWith('/') && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1');
+                if (isLocalFileOnCloud) {
+                  return (
+                    <div className="preview-unsupported" style={{ padding: '3rem', textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="1.5" style={{ marginBottom: '1rem' }}>
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                      </svg>
+                      <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Local File Unavailable</h3>
+                      <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                        This file was uploaded during local testing (stored on local disk) and is not available on this cloud deployment.
+                      </p>
+                    </div>
+                  );
+                }
                 const urlLower = url.toLowerCase();
                 const ext = urlLower.split('.').pop()?.split('?')[0]?.split('#')[0] || '';
                 const type = (previewResource.type || '').toLowerCase();

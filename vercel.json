@@ -11,6 +11,7 @@
   "regions": ["bom1"],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/uploads/(.*)", "destination": "/uploads/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
