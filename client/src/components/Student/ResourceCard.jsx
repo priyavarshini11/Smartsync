@@ -189,10 +189,9 @@ const ResourceCard = ({ resource, color, variant = 'default', bgColor, borderCol
         );
 
       case 'pdf': {
-        const isRemote = url.startsWith('http') && !url.includes('localhost') && !url.includes('127.0.0.1');
         return (
           <iframe
-            src={isRemote ? `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true` : `${url}#toolbar=1&navpanes=0`}
+            src={`${url}#toolbar=1&navpanes=0`}
             title={resource.title}
             className="preview-frame"
           />
