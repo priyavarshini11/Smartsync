@@ -40,6 +40,40 @@ const AdminResourceBrowser = () => {
     setLoading(false);
   };
 
+  const triggerDownload = (url, title, type) => {
+    if (!url) return;
+    const isDirectFile = !url.includes('drive.google.com') && 
+                         !url.includes('docs.google.com') && 
+                         type?.toLowerCase() !== 'link';
+
+    if (isDirectFile) {
+      fetch(url)
+        .then(response => {
+          if (!response.ok) throw new Error();
+          return response.blob();
+        })
+        .then(blob => {
+          const blobUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          let ext = url.split('.').pop()?.split('?')[0]?.split('#')[0] || '';
+          if (ext.length > 5 || !ext) {
+            ext = type?.toLowerCase() === 'pdf' ? 'pdf' : 'bin';
+          }
+          a.download = `${title || 'download'}.${ext}`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(blobUrl);
+        })
+        .catch(() => {
+          window.open(url, '_blank');
+        });
+    } else {
+      window.open(url, '_blank');
+    }
+  };
+
   // Fetch taxonomy on mount
   useEffect(() => {
     api.get('/taxonomy').then(data => {
@@ -444,7 +478,9 @@ const AdminResourceBrowser = () => {
             <div className="preview-header">
               <h3 className="truncate" style={{ fontWeight: 700, fontSize: '1rem', lineHeight: 1.2 }}>{previewResource.title}</h3>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                {/* Open in new tab button removed */}
+                <button className="btn btn-sm btn-outline" onClick={() => triggerDownload(previewResource.fileUrl, previewResource.title, previewResource.type)}>
+                  Download
+                </button>
                 <button className="btn btn-sm" onClick={() => setPreviewResource(null)} style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}>
                   Close
                 </button>
@@ -520,7 +556,7 @@ const AdminResourceBrowser = () => {
                       </svg>
                       <h3 style={{ marginBottom: '0.5rem' }}>No Preview Available</h3>
                       <p style={{ color: 'var(--text-secondary)' }}>This file type cannot be previewed in the browser.</p>
-                      <button className="btn btn-primary" style={{ marginTop: '1.5rem' }} onClick={() => window.open(url, '_blank')}>
+                      <button className="btn btn-primary" style={{ marginTop: '1.5rem' }} onClick={() => triggerDownload(url, previewResource.title, previewResource.type)}>
                         Download File
                       </button>
                     </div>

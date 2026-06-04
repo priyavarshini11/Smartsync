@@ -77,20 +77,42 @@ const ResourceCard = ({ resource, color, variant = 'default', bgColor, borderCol
     }
     
     if (!url) return;
-    // For external links, open in new tab
-    if (url.startsWith('http')) {
+
+    const isDirectFile = !url.includes('drive.google.com') && 
+                         !url.includes('docs.google.com') && 
+                         resource.type?.toLowerCase() !== 'link';
+
+    if (isDirectFile) {
+      fetch(url)
+        .then(response => {
+          if (!response.ok) throw new Error();
+          return response.blob();
+        })
+        .then(blob => {
+          const blobUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          
+          let ext = url.split('.').pop()?.split('?')[0]?.split('#')[0] || '';
+          if (ext.length > 5 || !ext) {
+            ext = resource.type?.toLowerCase() === 'pdf' ? 'pdf' : 'bin';
+          }
+          a.download = `${resource.title || 'download'}.${ext}`;
+          
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(blobUrl);
+          markAsRead();
+        })
+        .catch(() => {
+          window.open(url, '_blank');
+          markAsRead();
+        });
+    } else {
       window.open(url, '_blank');
-      return;
+      markAsRead();
     }
-    // Create a temporary anchor element to trigger download
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = resource.title || 'download';
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
   };
 
   // ---- View / Preview ----
