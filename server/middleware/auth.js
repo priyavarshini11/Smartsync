@@ -15,7 +15,7 @@ async function authenticate(req, res, next) {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findOne({ id: decoded.userId }).lean();
+    const user = await User.findOne({ id: decoded.userId }, { passwordHash: 0, __v: 0 }).lean();
     if (!user) {
       return res.status(401).json({ error: 'User not found' });
     }

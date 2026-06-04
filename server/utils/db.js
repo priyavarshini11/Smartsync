@@ -19,6 +19,11 @@ async function connectDB() {
 
     cached.promise = mongoose.connect(uri, {
       bufferCommands: false,
+      maxPoolSize: 5,
+      minPoolSize: 1,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 30000,
+      connectTimeoutMS: 5000,
     }).then(m => {
       console.log('MongoDB Connected:', m.connection.host);
       return m;

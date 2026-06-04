@@ -938,7 +938,7 @@ router.get('/resources', authenticate, async (req, res) => {
       query.targetSection = req.query.section;
     }
 
-    const resources = await Resource.find(query).sort({ createdAt: -1 }).lean();
+    const resources = await Resource.find(query, { _id: 0, __v: 0 }).sort({ createdAt: -1 }).lean();
     res.json(resources);
   } catch (err) {
     console.error('Get resources error:', err);
