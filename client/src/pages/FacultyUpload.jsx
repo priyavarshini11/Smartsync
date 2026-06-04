@@ -324,6 +324,12 @@ const FacultyUpload = () => {
               ref={fileRef} 
               onChange={e => {
                 const selectedFile = e.target.files[0];
+                if (selectedFile && selectedFile.size > 4.5 * 1024 * 1024) {
+                  alert("File size exceeds Vercel's 4.5 MB direct upload limit. Please upload the file to Google Drive and paste the link, or choose a smaller file.");
+                  setFile(null);
+                  if (fileRef.current) fileRef.current.value = '';
+                  return;
+                }
                 setFile(selectedFile);
                 if (selectedFile) {
                   const ext = selectedFile.name.split('.').pop()?.toLowerCase();

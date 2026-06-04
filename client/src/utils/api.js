@@ -23,8 +23,29 @@ async function apiFetch(endpoint, options = {}) {
     }
   }
 
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Request failed');
+  let data;
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    try {
+      data = await res.json();
+    } catch (e) {
+      data = { error: 'Failed to parse JSON response' };
+    }
+  } else {
+    try {
+      const text = await res.text();
+      data = { error: text || 'Request failed' };
+    } catch (e) {
+      data = { error: 'Request failed' };
+    }
+  }
+  
+  if (!res.ok) {
+    if (res.status === 413) {
+      throw new Error('File is too large! Vercel limits direct uploads to 4.5 MB. Please upload your file to Google Drive and paste the link instead.');
+    }
+    throw new Error(data.error || `Request failed with status ${res.status}`);
+  }
   return data;
 }
 
